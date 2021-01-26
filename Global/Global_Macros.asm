@@ -6,6 +6,7 @@ macro StartOfROM(CurrentGameID, GameID, ROMID)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable W1029				; Note: Disable warning about mapper switching
 incsrc "../Global/HardwareRegisters/SNES.asm"
 ;namespace nested on
 
@@ -113,6 +114,7 @@ macro InitializeROM(CurrentGameID, GameID, ROMID)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable W1029				; Note: Disable warning about mapper switching
 ;namespace nested on
 
 print "Yoshifanatic's SNES ROM Framework, Version !FrameworkVer.!FrameworkSubVer.!FrameworkSubSubVer"
@@ -138,6 +140,7 @@ org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
 warnings disable W1006				; Note: Disable warning about non-existent opcodes with 16-bit parameters.
+warnings disable W1029				; Note: Disable warning about mapper switching
 arch spc700-raw
 incsrc "../Global/HardwareRegisters/SPC700.asm"
 ;namespace nested on
@@ -156,6 +159,7 @@ macro InitializeSuperFXROM(CurrentGameID, GameID, ROMID)
 org $008000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable W1029				; Note: Disable warning about mapper switching
 arch superfx
 ;namespace nested on
 
@@ -199,6 +203,7 @@ macro DisplayFinalChecksum(CurrentGameID, GameID, ROMID)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable W1029				; Note: Disable warning about mapper switching
 ;namespace nested on
 
 incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
@@ -242,6 +247,7 @@ macro GetFirmwareFile(CurrentGameID, GameID, ROMID)
 org $008000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable W1029				; Note: Disable warning about mapper switching
 ;namespace nested on
 
 incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
@@ -256,6 +262,7 @@ macro InitializeMSU1ROM(CurrentGameID, GameID, ROMID)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable W1029				; Note: Disable warning about mapper switching
 incsrc "../Global/HardwareRegisters/SNES.asm"
 ;namespace nested on
 
@@ -274,6 +281,7 @@ macro GenerateSaveFile(CurrentGameID, GameID, ROMID)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable W1029				; Note: Disable warning about mapper switching
 incsrc "../Global/HardwareRegisters/SNES.asm"
 ;namespace nested on
 
@@ -999,14 +1007,14 @@ if !FrameworkVer != !Define_Global_ROMFrameworkVer
 endif
 
 if !TEMP == 1
-	warn "This disassembly was made for framework version !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer while the disassembly is made for !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer. There may be some slight incompatibilities."
+	warn "This disassembly was made for framework version !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer while the framework is !FrameworkVer.!FrameworkSubVer.!FrameworkSubSubVer. There may be some slight incompatibilities."
 elseif !TEMP == 2
-	warn "This disassembly was made for framework version !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer while the disassembly is made for !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer. If it failed to assemble, this is most likely why."
+	warn "This disassembly was made for framework version !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer while the framework is !FrameworkVer.!FrameworkSubVer.!FrameworkSubSubVer. If it failed to assemble, this is most likely why."
 elseif !TEMP == 3
-	warn "This disassembly was made for framework version !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer while the disassembly is made for !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer. Now you know why the disassembly failed to assemble."
+	warn "This disassembly was made for framework version !Define_Global_ROMFrameworkVer.!Define_Global_ROMFrameworkSubVer.!Define_Global_ROMFrameworkSubSubVer while the framework is !FrameworkVer.!FrameworkSubVer.!FrameworkSubSubVer. Now you know why the disassembly failed to assemble."
 endif
 if !TEMP != 0
-	print "Visit Yoshifanatic's Github at https://github.com/Yoshifanatic1?tab=repositories for the correct version of the framework."
+	print "Visit Yoshifanatic's SNES ROM Framework GitHub repository (https://github.com/Yoshifanatic1/SNES-ROM-Framework) for the correct version of the framework."
 endif
 
 norom
