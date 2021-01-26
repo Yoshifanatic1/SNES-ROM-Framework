@@ -1,4 +1,12 @@
-(0/0/20) (V1.0.0 release)
+(1/26/20) (V1.0.1 release)
+- Upgraded to asar 1.81
+- Adjusted the warning/error message for the incorrect version, as it displayed the disassembly version twice rather than the disassembly and framework version.
+- Fixed a bugged assert error in the SuperFX global macros.
+- Disabled the newly added warning for mapper switching.
+
+;--------------------------------------------------------------------
+
+(1/8/20) (V1.0.0 release)
 - Added several global defines that define the start and end of the 2 RAM banks, the 8 KB mirror, and the SRAM/BW-RAM banks. Useful for RAM clear loops that use a general RAM address and not a specific one. The SRAM end one will adjust based on what SRAM/BW-RAM size and memory map is being used.
 - Shortened the name of the !Joypad defines a little.
 - Removed the old !Button defines and replaced them with the new !Joypad defines in all the games.

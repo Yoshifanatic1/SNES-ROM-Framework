@@ -251,18 +251,31 @@ Notes:
 
 
 ===Supported ROMs===
-This disassembly framework supports 28 different ROMs currently:
+This disassembly framework supports 46 different ROMs currently:
 - EarthBound (USA (incomplete))
+- Earthworm Jim 2 (USA)
 - GameX Base ROM (V1, V2)
+- Faceball 2000 (USA)
+- Frogger (USA)
+- Goof Troop (USA)
+- Jurassic Park 1 (USA)
+- Mega Man 7 (USA)
 - Mario & Yoshi's Strange Quests (SMW ROM hack by Yoshifanatic)
+- Mario Paint (USA/Japan)
+- Pac-Man 2: The New Adventures (USA)
 - Plok! (USA, PAL, Japan, French (incomplete), German (incomplete))
 - Super Mario All-Stars (USA, Japan, Japan (Rev.1), PAL)
 - Super Mario All-Stars + Super Mario World (USA, PAL)
-- Super Mario Bros. (USA, PAL)
-- Super Mario Bros. The Lost Levels (USA, PAL)
-- Super Mario Bros. 2 (USA, PAL)
-- Super Mario Bros. 3 (USA, PAL)
+- Super Mario Bros. (USA, PAL, Japan)
+- Super Mario Bros. The Lost Levels (USA, PAL, Japan)
+- Super Mario Bros. 2 (USA, PAL, Japan)
+- Super Mario Bros. 3 (USA, PAL, Japan)
+- Super Mario Kart (USA, USA Rev.1)
+- Super Mario RPG: Legend of the Seven Stars (USA)
 - Super Mario World (USA, Japan, PAL, PAL (Rev.1), Japan (Arcade))
+- Super Mario World 2: Yoshi's Island (USA)
+- Williams Arcade's Greatest Hits (USA)
+- Wario's Woods (USA)
 
 Notes:
 - In theory, 90% of all official SNES games could be made to work within this framework. The main exceptions being games that require features asar currently doesn't support or games that use hardware that's either poorly documented or not supported well enough by this framework.
