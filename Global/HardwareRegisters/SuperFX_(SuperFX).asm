@@ -6,7 +6,7 @@
 
 macro SuperFXBankStart(Base)
 assert !InBank == !FALSE, "You must put a SuperFXBankEnd macro before calling SuperFXBankStart again!"
-asset !SuperFXPointers != $00, "You must generate at least one pointer with SuperFXRoutinePointer() before beginning a SuperFX code bank!"
+assert !SuperFXPointers != $00, "You must generate at least one pointer with SuperFXRoutinePointer() before beginning a SuperFX code bank!"
 assert !EndOfSuperFXPointers == !TRUE, "You need to end the SuperFX routine pointer table with EndSuperFXRoutinePointers() before beginning any SuperFX banks!"
 	dl FXCODE_<Base>_Start
 	dl FXCODE_<Base>_End
