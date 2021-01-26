@@ -4,6 +4,7 @@
 - Fixed a bugged assert error in the SuperFX global macros.
 - Disabled the newly added warning for mapper switching.
 - The %BANK_END macro now resets the !ROMBankSplitFlag flag.
+- Fixed a bug where the !ROMBankSplitFlag was not accounted for with the %InsertMacroAtXPosition() macro.
 
 ;--------------------------------------------------------------------
 
