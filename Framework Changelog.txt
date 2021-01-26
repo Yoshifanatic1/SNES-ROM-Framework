@@ -3,6 +3,7 @@
 - Adjusted the warning/error message for the incorrect version, as it displayed the disassembly version twice rather than the disassembly and framework version.
 - Fixed a bugged assert error in the SuperFX global macros.
 - Disabled the newly added warning for mapper switching.
+- The %BANK_END macro now resets the !ROMBankSplitFlag flag.
 
 ;--------------------------------------------------------------------
 
