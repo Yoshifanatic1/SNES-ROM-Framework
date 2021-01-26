@@ -583,6 +583,7 @@ if !CurrentBank != $FF
 endif
 	reset bytes
 	!InBank = !FALSE
+	!ROMBankSplitFlag = !FALSE
 	!CurrentBank = $<Bank>
 	ROMBANK<Bank>_END:
 endmacro
