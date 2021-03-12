@@ -44,7 +44,7 @@
 	!SA1_BWRAMAddressMapping_Source_Bank60 = $80
 !REGISTER_SA1_SNESBWRAMWriteEnable = $002226
 !REGISTER_SA1_SA1BWRAMWriteEnable = $002227
-	!SA1_BWRAMWriteProtection_Disable = $80
+	!SA1_BWRAMWriteProtection_Disable = $00
 	!SA1_BWRAMWriteProtection_Enable = $80
 !REGISTER_SA1_BWRAMWriteProctectedArea = $002228
 !REGISTER_SA1_SNESIRAMWriteProtection = $002229
