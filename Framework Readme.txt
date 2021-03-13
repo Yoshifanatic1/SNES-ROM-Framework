@@ -482,11 +482,13 @@ Setting !Define_Global_IgnoreOriginalFreespace to !TRUE can help verify if the a
 - Any time the code uses an RTS/RTL jump (ex. LDA.w #$A9B2 : PHA : RTS), the actual address being jumped to is 1 higher. So, in the example, you'd do this to account for it when assigning a label to the value: "LDA.w #CODE_00A9B3-$01". However, if there is a DEC/SBC #$01/SBC #$0001 before the push opcode, do not put a "-$01" after the label!
 - I recommend putting a space between a label and any sort of opcode that changes the program counter and doesn't return (ex. BRA/BRL/JMP/JML/RTS/RTL/RTI). This is to make it clear that the CPU will not read past these opcodes. However, there are exceptions depending on how the code is set up (ex. BNE : BEQ, as the BEQ will act as a BRA, or PER $0002 : JMP, as the JMP will act as a JSR).
 - The SuperFX has a sort of multi-stage pipeline design, where it can decode the next opcode while the current one is being processed. So, the opcode immediately after something that changes the program counter is executed before the branch takes place. How you deal with this is up to you.
+- For games that have a huge amount of pointers to data you have yet to identify, it'd be wise to paste the labels for those pointers in a separate file and organize them based on the routine/RAM address the label is for. That way, you can keep track of potentially different data types when you go to identify them.
 - The SuperFX has "ALT" opcodes that change the behavior of various instructions. SuperFX code can and will jump in the middle of these ALT instructions, so you'll need to account for that.
-- If the opcodes found after a JSR/JSL/CALL make no sense and the code before those opcodes was valid, it's possible that the bytes after it are parameters for that routine. If the routine does the following, then those bytes are parameters:
+ If the opcodes found after a JSR/JSL/CALL make no sense and the code before those opcodes was valid, it's possible that the bytes after it are parameters for that routine. If the routine does the following, then those bytes are parameters:
 	- Uses stack relative addressing to reference the return address.
 	- Puts the stack pointer into A/X/Direct page
 	- Pulls bytes off the stack without pushing any beforehand.
+- If there are branches, jumps, or subroutine calls in the garbage code and you're disassembly method auto generates labels based on what opcodes were disassembled, it'd be a wise idea to follow the labels if they point somewhere valid. If these labels are only used by garbage opcodes, you should remove them so that your disassembled code is cleaner.
 - As you get better at disassembly, it'll become easier to distinguish between actual code and data being disassembled as code. Disassembled data looks like gibberish. There is also the fact that the wrong size of A/X/Y with SNES code can make otherwise valid code look like gibberish. Common examples of this:
 	SNES.
 	- Long strings of SBC.l $XXXXXX,x
@@ -496,10 +498,13 @@ Setting !Define_Global_IgnoreOriginalFreespace to !TRUE can help verify if the a
 	- REP/SEPs affecting flags besides the size or carry flags, which are the 3 most common.
 	- MVP/MVN that lack a proper setup before execution.
 	- Branches/Jumps/subroutine calls that point to open bus, registers, RAM. There are exceptions for the latter however.
+	- Strange usage of indirect indexing, especially if the game in question rarely uses this type of addressing.
 	- Strange usage of stack relative addressing, especially if the game in question rarely uses this type of addressing.
 	- EOR.w #$1AFF or EOR.b #$FF : SBC.l which often means that A is the wrong size.
+	- A string of stack commands that makes no sense in context.
 	SPC700
 	- STOP/SLEEP/DI/EI/BRK/RETI/DAA/DAS, as those are either useless/infrequently used opcodes.
+	- Long strings of NOP
 	SuperFX
 	- Long strings of STOP opcodes or STOPs that are not followed by a NOP.
 	- Long strings of NOP
