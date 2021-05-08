@@ -2,7 +2,7 @@ SNES ROM framework by Yoshifanatic
 This is a framework built off of asar that manages SNES game disassemblies and homebrew. It was originally designed for Super Mario World, but as I disassembled more games, it needed to change and adapt to accomidate what these ROMs did.
 Now, this framework is fairly capable of handling many different SNES ROMs. For questions and feedback, visit my Discord server at http://discord.gg/TUDwsCg. For contributions, visit my Github page at https://github.com/Yoshifanatic1?tab=repositories
 
-In addition, this framework and all compatible disassemblies are public domain. You're free to edit, copy, etc. this framework and any disassemblies made with no strings attached. Credit is appreciated, but not required.
+In addition, this framework and all compatible disassemblies are licensed under GPL-3.0. You're free to edit, copy, etc. this framework and any disassemblies made with no strings attached. Credit is appreciated, but not required.
 
 Table of Contents (use ctrl+F)
 - Basic Usage
@@ -16,7 +16,7 @@ Table of Contents (use ctrl+F)
 - MSU-1 Support
 - Save File Generation
 - Chip Firmware
-- SuperFX Link Protocal
+- Pre-compiled File Link Protocal
 - Using the GAMEX Base ROM
 - Making Your Own Disassembly
 - Future Improvements
@@ -100,7 +100,8 @@ The settings in X_GlobalAssemblySettings() in the ROM Map files
 	- !Chip_SuperGameboy			- Use the Super Gameboy, only used by the Super Game Boy cart. Requires a firmware file to use.
 	- !Chip_Satellaview			- Indicates that the cartridge is compatible with the Satellaview peripheral.
 	- !Chip_MSU1				- Use the MSU-1 chip, a chip designed by Near (formerly known as Byuu). Unlike the other chips, this one can be used in conjuction with others.
-- !Define_Global_ROMSize			- Controls how big the ROM will be when asar initializes it. You technically don't need to set this to use bigger ROM sizes, but it's highly recommended you set it to the appropriate value.
+- !Define_Global_ROMSize1			- Controls how big the ROM will be when asar initializes it. You technically don't need to set this to use bigger ROM sizes, but it's highly recommended you set it to the appropriate value.
+- !Define_Global_ROMSize2			- Same as !Define_Global_ROMSize1, except it's value is added to that to allow for ROM sizes that are a combination of 2 powers of 2. Ex. 2.5 MB, which is a combination of 2 MB and 512 KB.
 - !Define_Global_SRAMSize			- Controls how much SRAM/BW-RAM is in the cartridge.
 - !Define_Global_Region				- Defines what region of the world the cartridge was distributed in.
 - !Define_Global_LicenseeID			- A one byte ID code for the developer/publisher ID used in ROMs with the $00 or $01 header. In $02 header ROMs, this byte will be set to $33.
@@ -173,9 +174,7 @@ Macros inside Global_Macros.asm
 - InitializeMSU1ROM()			- Acts like StartOfROM(), but for MSU-1 data files and must be called manually
 - GenerateSaveFile()			- Acts like StartOfROM(), but for save files and must be called manually
 - FREE_BYTES()				- Inserts the specified bytes X times, to fill in empty parts of the ROM. if !Define_Global_IgnoreOriginalFreespace is enabled, these macros are effectively disabled.
-- InsertMacroAtXPosition()		- This is called inside every routine macro to insert it at the address specified inside the routine macro call. If the address is set to "NULLROM" or if !Define_Global_IgnoreCodeAlignments is enabled, the routine macro will be inserted at the earliest available byte inside the bank it's in.
 - PrintLabelLocation()			- Prints out the SNES address of the specified label. Note that you must append namespaces if the label is inside a routine macro as well as higher tier labels if the label is a sublabel (ie. To display for example: .label, you might have to do: GAMEX_Routine_Main_label, where "GAMEX_Routine" was the namespace, "Main" was a higher tier label, and "label" was the sublabel).
-- SetDuplicateOrNullPointer()		- This is used if you want a label to point somewhere invalid or into another routine without needing to mess with the label structure of said routine. Note that this must be called after a "namespace off" if inside a routine macro.
 - InsertVersionExclusiveFile()		- This is used as an easy way to insert a version exclusive file without the need for if/else statements. Note that if/else may still be necessary if not all ROM versions have a different file.
 - RATSTagStart()			- Defines the start of a RATS protected block, meant to protect a block from being overwritten when tools are used on the ROM. Must have a corresponding RATSTagEnd() sometime after it.
 - RATSTagEnd()				- Defines the end of a RATS protected block
@@ -189,6 +188,8 @@ Macros inside Global_Macros.asm
 - DisplaySettingMessages()		- Called by DisplayFinalChecksum() to handle displaying various warning messages depending on the assembly and cartridge header settings used.
 - SetROMToAssembleForHack()		- Used to specify which ROM is used as the base when assembling a hacked version.
 - LoadExtraRAMFile()			- Used to load the SRAM_Map/ExRAM_Map/ExFlashRAM_Map file when any of the RAM size defines are set greater than 0KB.
+- InsertNextPreCompiledodeBlock()	- This inserts the next portion of the specified pre-compiled file at the location of the macro. It accepts an address as a parameter since InsertMacroAtXPosition() is called by it.
+- SetNextPreCompiledCodePointer()	- Each time this macro is called, it reads the next value from the pointer table found at the start of a pre-compiled file, and assigns it to the label you gave to this macro.
 - InsertGarbageData()			- Used to insert a block of garbage code/data into the ROM. These areas act as freespace, meaning the data they control won't be inserted if !Define_Global_IgnoreOriginalFreespace is set to !TRUE.
 - CalculateFreespaceRemaining()		- This is called when !Define_Global_ApplyAsarPatches is enabled in order to display the remaining freespace and how much freespace has been used.
 - AppendListOfItemsToPrint()		- Called by ROMSettingWarningsAndErrors() to format the list of supported controllers.
@@ -208,8 +209,6 @@ Macros in the SPC700.asm, available during SPC700 code assembly
 
 Macros in SuperFX_(SNES).asm, available for SuperFX games during main code assembly
 - EnableSuperFXHiROMMirroring()		- This is intented to be used whenever a SuperFX game makes use of the HiROM bank mirror, as SuperFX games lay these banks out differently from every other memory map. Place this at the start of a bank and that bank will be treated as if it's a HiROM bank at (BankID/2)+$400000. As the SuperFX memory map is inherently a loROM memory map, put this macro in an even numbered bank, remove the odd numbered bank after it, and set the even numbered bank to end in the odd numbered bank.
-- InsertNextSuperFXCodeBlock()		- This inserts the next portion of the assembled SuperFXCode.bin file at the location of the macro. It accepts an address as a parameter since InsertMacroAtXPosition() is called by it.
-- SetNextSuperFXCodePointer()		- Each time this macro is called, it reads the next value from the pointer table found at the start of SuperFXCode.bin, and assigns it to the label you gave to this macro.
 
 Macros in SuperFX_(SuperFX).asm, available during SuperFX code assembly
 - SuperFXBankStart()			- Acts like SPCDataBlockStart(), but for SuperFX files. Unlike that macro, you assign a 24-bit ROM address instead of a 16-bit one. You also must have at least one instance of SuperFXRoutinePointer() prior to the first call of this macro, or else an error is thrown.
@@ -226,8 +225,9 @@ Macros inside the ROM Map files
 - X_GlobalAssemblySettings()			- Contains all the cartridge header defines as well as the ROM specific settings.
 - X_LoadROMMap()				- Contains the list of all the routine macros that will be inserted into the ROM.
 
-
-
+Macros that differ depending on whether SNES, SPC700, or SuperFX assembly is occuring.
+- InsertMacroAtXPosition()		- This is called inside every routine macro to insert it at the address specified inside the routine macro call. If the address is set to "NULLROM" or if !Define_Global_IgnoreCodeAlignments is enabled, the routine macro will be inserted at the earliest available byte inside the bank it's in. Note that it changes the base address if used during SPC700 or SuperFX assembly.
+- SetDuplicateOrNullPointer()		- This is used if you want a label to point somewhere invalid or into another routine without needing to mess with the label structure of said routine. Note that this must be called after a "namespace off" if inside a routine macro.
 
 ===ROM Version Differences===
 This framework has a built in method for handling multiple versions of the same game without needing to make a separate disassembly for each one. !Define_Global_ROMToAssemble is a global define that can be checked for to determine what ROM was chosen to assemble. As an example:
@@ -251,29 +251,33 @@ Notes:
 
 
 ===Supported ROMs===
-This disassembly framework supports 46 different ROMs currently:
+This disassembly framework supports 53 different SNES ROMs currently:
 - EarthBound (USA (incomplete))
 - Earthworm Jim 2 (USA)
 - GameX Base ROM (V1, V2)
 - Faceball 2000 (USA)
 - Frogger (USA)
 - Goof Troop (USA)
-- Jurassic Park 1 (USA)
+- Jurassic Park 1 (USA V1.0)
+- Kirby's Dream Land 3 (USA/Japan)
 - Mega Man 7 (USA)
 - Mario & Yoshi's Strange Quests (SMW ROM hack by Yoshifanatic)
 - Mario Paint (USA/Japan)
+- Ms. Pac-Man (USA)
 - Pac-Man 2: The New Adventures (USA)
 - Plok! (USA, PAL, Japan, French (incomplete), German (incomplete))
-- Super Mario All-Stars (USA, Japan, Japan (Rev.1), PAL)
+- SimCity (USA)
+- Speedy Gonzales: Los Gatos Banditos (USA V1.0, USA V1.1)
+- Super Mario All-Stars (USA, Japan V1.0, Japan V1.1, PAL)
 - Super Mario All-Stars + Super Mario World (USA, PAL)
 - Super Mario Bros. (USA, PAL, Japan)
 - Super Mario Bros. The Lost Levels (USA, PAL, Japan)
 - Super Mario Bros. 2 (USA, PAL, Japan)
 - Super Mario Bros. 3 (USA, PAL, Japan)
-- Super Mario Kart (USA, USA Rev.1)
+- Super Mario Kart (USA V1.0, USA V1.1)
 - Super Mario RPG: Legend of the Seven Stars (USA)
-- Super Mario World (USA, Japan, PAL, PAL (Rev.1), Japan (Arcade))
-- Super Mario World 2: Yoshi's Island (USA)
+- Super Mario World (USA, Japan, PAL V1.0, PAL V1.1, Japan (Arcade))
+- Super Mario World 2: Yoshi's Island (USA V1.0, USA V1.1)
 - Williams Arcade's Greatest Hits (USA)
 - Wario's Woods (USA)
 
@@ -368,24 +372,38 @@ For convienience, the framework provides a folder for this firmware. Placing the
 
 
 
-===SuperFX Link Protocal===
-Due to the nature of the SuperFX chip and the fact that asar doesn't allow referencing labels across different architectures, this is how you're expected to set up SuperFXCode.asm so it can be referenced during main code assembly.
+===Pre-compiled File Link Protocal===
+Due to the nature of the SuperFX chip and the fact that asar doesn't allow referencing labels across different architectures, I've created a system that allows you to be able to assemble that code while being able to link to it within the main assembly.
+In additon, perhaps you may be using a custom build of asar or other tool that doesn't work directly with the disassembly. With this, you can compile the code/data while being able to link it to the main assembly.
+
+For a SuperFX code file:
 1). Place a %SuperFXBankStart(XXXXXX) inside your SuperFX code file to mark the beginning of a SuperFX code block. XXXXXX must be the SNES ROM address that this block will be inserted at during main code assembly.
 2). Place a %SuperFXBankEnd(XXXXXX) at the end of the SuperFX code block. Set XXXXXX to be the same value that was used for %SuperFXBankStart() previously. 
 3). Repeat steps 1-2 for each code block that is expected to be inserted at different locations until all the code blocks are accounted for.
 4). Place %SuperFXRoutinePointer(Label) macro calls prior to the first %SuperFXBankStart() call. Set "Label" to a label that you intend on having the SNES tell the SuperFX chip to jump to, data blocks that the SuperFX references that are outside any code blocks, or data blocks that both the SNES and SuperFX reference. Do this for every label this applies to.
 5). Place %EndSuperFXRoutinePointers() to mark the end of the SuperFX pointer table.
-6). In the ROM_Map file(s), add an incsrc in LoadGameSpecificMainSNESFiles() to a file that will contain the SuperFX pointer labels that will be used to link to the SuperFX code file.
-7). Inside your SuperFX pointer label file add as many %SetNextSuperFXCodePointer(Label) macro calls to it as you placed %SuperFXRoutinePointer() inside the SuperFX code file. Set "Label" to a label name you used for the corresponding %SuperFXRoutinePointer() labels, in the order they were assigned.
-8). Place %InsertNextSuperFXCodeBlock($XXXXXX) at the locations you want the SuperFX code to be inserted at. Set XXXXXX to be the value assigned to the %SuperFXBankStart() macros, in the order they were assigned.
 
-If you did everything right, your disassembly/homebrew project should be all set to work with the compiled SuperFX code file.
+For a non-SuperFX code file, here is how it should be formatted:
+- All pointers must be 24-bit
+- 2 pointers at the start of the file indicating the start and end of the label pointer table.
+- All the label pointers that will be referenced on the SNES side must be put right after the above pointer table.
+- 3 pointers must be placed at the start of a "bank", the first being the base address the data will be inserted at, the second pointing to the start of the code/data block, and the third pointing to the end.
+
+For the main assembly:
+- In the ROM_Map file(s), add an incsrc in LoadGameSpecificMainSNESFiles() to a file that will contain the pointer labels that will be used to link to the pre-compiled code file. Make it the first file loaded in the list of files loaded by this macro.
+- Inside your SuperFX pointer label file add as many %SetNextPreCompiledCodePointer(Label, File, Define) macro calls to it as you placed %SuperFXRoutinePointer() (or label pointers) inside the code file.
+	- Set "Label" to a label name you used for the corresponding entries in the code file, in the order they were assigned.
+	- Set "File" to the file path and name of the pre-compiled file.
+	- Set "Define" to the name of the file.
+- Place %InsertNextPreCompiledCodeBlock($XXXXXX, File, Define) at the locations you want the pre-compiled code to be inserted at. Set XXXXXX to be the value assigned to the %SuperFXBankStart() macros/the address you assigned to pre-compiled file bank, in the order they were assigned, and "File"/"Define" to what they were for the above macro.
+
+If you did everything right, your disassembly/homebrew project should be all set to work with the pre-compiled code file.
 
 Notes:
-- This system allows one to both link to the SuperFX code/data from the SNES side while also allowing the pointers to auto adjust as stuff on the SuperFX is shifted around.
-- If you need to add/remove a pointer/code/data block, you must remove the corresponding pointer/block related macro(s) from both the SNES and SuperFX side of things, or else the pointers after the change will become misaligned (ex. If you remove pointer 2 from the SuperFX pointer list, then pointer 2 on the SNES side will use the value meant for pointer 3).
-
-
+- This system allows one to both link to pre-compiled code/data from the SNES side while also allowing the pointers to auto adjust as stuff from the pre-compiled file is shifted around.
+- If you need to add/remove a pointer/code/data block, you must remove the corresponding pointer/block related macro(s) from both the SNES and pre-compiled file side of things, or else the pointers after the change will become misaligned (ex. If you remove pointer 2 from the pointer list, then pointer 2 on the SNES side will use the value meant for pointer 3).
+- This system allows you to use other compilers for specific components. As long as you set up the pointer tables correctly, asar doesn't care how the pre-compiled data was created.
+- Look at my Yoshi's Island disassembly for an example of how this is done.
 
 
 

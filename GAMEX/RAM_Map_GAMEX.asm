@@ -1,0 +1,167 @@
+!RAM_GAMEX_Global_ScratchRAM000000 = $000000
+!RAM_GAMEX_Global_ScratchRAM000001 = $000001
+!RAM_GAMEX_Global_ScratchRAM000002 = $000002
+!RAM_GAMEX_Global_ScratchRAM000003 = $000003
+!RAM_GAMEX_Global_ScratchRAM000004 = $000004
+!RAM_GAMEX_Global_ScratchRAM000005 = $000005
+!RAM_GAMEX_Global_ScratchRAM000006 = $000006
+!RAM_GAMEX_Global_ScratchRAM000007 = $000007
+!RAM_GAMEX_Global_ScratchRAM000008 = $000008
+!RAM_GAMEX_Global_ScratchRAM000009 = $000009
+!RAM_GAMEX_Global_ScratchRAM00000A = $00000A
+!RAM_GAMEX_Global_ScratchRAM00000B = $00000B
+!RAM_GAMEX_Global_ScratchRAM00000C = $00000C
+!RAM_GAMEX_Global_ScratchRAM00000D = $00000D
+!RAM_GAMEX_Global_ScratchRAM00000E = $00000E
+!RAM_GAMEX_Global_ScratchRAM00000F = $00000F
+!RAM_GAMEX_Global_ScratchRAM000010 = $000010
+!RAM_GAMEX_Global_ScratchRAM000011 = $000011
+!RAM_GAMEX_Global_ScratchRAM000012 = $000012
+!RAM_GAMEX_Global_ScratchRAM000013 = $000013
+!RAM_GAMEX_Global_ScratchRAM000014 = $000014
+!RAM_GAMEX_Global_ScratchRAM000015 = $000015
+!RAM_GAMEX_Global_ScratchRAM000016 = $000016
+!RAM_GAMEX_Global_ScratchRAM000017 = $000017
+!RAM_GAMEX_Global_ScratchRAM000018 = $000018
+!RAM_GAMEX_Global_ScratchRAM000019 = $000019
+!RAM_GAMEX_Global_ScratchRAM00001A = $00001A
+!RAM_GAMEX_Global_ScratchRAM00001B = $00001B
+!RAM_GAMEX_Global_ScratchRAM00001C = $00001C
+!RAM_GAMEX_Global_ScratchRAM00001D = $00001D
+!RAM_GAMEX_Global_ScratchRAM00001E = $00001E
+!RAM_GAMEX_Global_ScratchRAM00001F = $00001F
+
+!RAM_GAMEX_Global_Layer1XPosLo = $000020
+!RAM_GAMEX_Global_Layer1XPosHi = !RAM_GAMEX_Global_Layer1XPosLo+$01
+!RAM_GAMEX_Global_Layer1YPosLo = $000022
+!RAM_GAMEX_Global_Layer1YPosHi = !RAM_GAMEX_Global_Layer1YPosLo+$01
+!RAM_GAMEX_Global_Layer2XPosLo = $000024
+!RAM_GAMEX_Global_Layer2XPosHi = !RAM_GAMEX_Global_Layer2XPosLo+$01
+!RAM_GAMEX_Global_Layer2YPosLo = $000026
+!RAM_GAMEX_Global_Layer2YPosHi = !RAM_GAMEX_Global_Layer2YPosLo+$01
+!RAM_GAMEX_Global_Layer3XPosLo = $000028
+!RAM_GAMEX_Global_Layer3XPosHi = !RAM_GAMEX_Global_Layer3XPosLo+$01
+!RAM_GAMEX_Global_Layer3YPosLo = $00002A
+!RAM_GAMEX_Global_Layer3YPosHi = !RAM_GAMEX_Global_Layer3YPosLo+$01
+!RAM_GAMEX_Global_Layer4XPosLo = $00002C
+!RAM_GAMEX_Global_Layer4XPosHi = !RAM_GAMEX_Global_Layer4XPosLo+$01
+!RAM_GAMEX_Global_Layer4YPosLo = $00002E
+!RAM_GAMEX_Global_Layer4YPosHi = !RAM_GAMEX_Global_Layer4YPosLo+$01
+
+!RAM_GAMEX_Global_WaitForVBlankFlag = $000100
+!RAM_GAMEX_Global_FrameCounterLo = $000102
+!RAM_GAMEX_Global_FrameCounterHi = !RAM_GAMEX_Global_FrameCounterLo+$01
+!RAM_GAMEX_Global_CurrentGamemodeLo = $000104
+!RAM_GAMEX_Global_CurrentGamemodeHi = !RAM_GAMEX_Global_CurrentGamemodeLo+$01
+!RAM_GAMEX_Global_ControllerHold1P1 = $000106
+!RAM_GAMEX_Global_ControllerHold2P1 = !RAM_GAMEX_Global_ControllerHold1P1+$01
+!RAM_GAMEX_Global_ControllerHold1P2 = !RAM_GAMEX_Global_ControllerHold1P1+$02
+!RAM_GAMEX_Global_ControllerHold2P2 = !RAM_GAMEX_Global_ControllerHold1P1+$03
+!RAM_GAMEX_Global_ControllerPress1P1 = !RAM_GAMEX_Global_ControllerHold1P1+$04
+!RAM_GAMEX_Global_ControllerPress2P1 = !RAM_GAMEX_Global_ControllerHold1P1+$05
+!RAM_GAMEX_Global_ControllerPress1P2 = !RAM_GAMEX_Global_ControllerHold1P1+$06
+!RAM_GAMEX_Global_ControllerPress2P2 = !RAM_GAMEX_Global_ControllerHold1P1+$07
+!RAM_GAMEX_Global_P1CtrlDisableLo = $00010E
+!RAM_GAMEX_Global_P1CtrlDisableHi = !RAM_GAMEX_Global_P1CtrlDisableLo+$01
+!RAM_GAMEX_Global_P2CtrlDisableLo = !RAM_GAMEX_Global_P1CtrlDisableLo+$02
+!RAM_GAMEX_Global_P2CtrlDisableHi = !RAM_GAMEX_Global_P1CtrlDisableLo+$03
+!RAM_GAMEX_Global_Controller1PluggedInFlag = $000112
+!RAM_GAMEX_Global_Controller2PluggedInFlag = !RAM_GAMEX_Global_Controller1PluggedInFlag+$02
+!RAM_GAMEX_Global_ScreenDisplayRegister = $000116
+!RAM_GAMEX_Global_OAMSizeAndDataAreaDesignation = $000117
+!RAM_GAMEX_Global_BGModeAndTileSizeSetting = $000118
+!RAM_GAMEX_Global_MosaicSizeAndBGEnable = $000119
+!RAM_GAMEX_Global_BG1AddressAndSize = $00011A
+!RAM_GAMEX_Global_BG2AddressAndSize = $00011B
+!RAM_GAMEX_Global_BG3AddressAndSize = $00011C
+!RAM_GAMEX_Global_BG4AddressAndSize = $00011D
+!RAM_GAMEX_Global_BG1And2TileDataDesignation = $00011E
+!RAM_GAMEX_Global_BG3And4TileDataDesignation = $00011F
+!RAM_GAMEX_Global_Mode7TilemapSettings = $0000120
+!RAM_GAMEX_Global_Mode7MatrixParameterALo = $000121
+!RAM_GAMEX_Global_Mode7MatrixParameterAHi = !RAM_GAMEX_Global_Mode7MatrixParameterALo+$01
+!RAM_GAMEX_Global_Mode7MatrixParameterBLo = $000123
+!RAM_GAMEX_Global_Mode7MatrixParameterBHi = !RAM_GAMEX_Global_Mode7MatrixParameterBLo+$01
+!RAM_GAMEX_Global_Mode7MatrixParameterCLo = $000125
+!RAM_GAMEX_Global_Mode7MatrixParameterCHi = !RAM_GAMEX_Global_Mode7MatrixParameterCLo+$01
+!RAM_GAMEX_Global_Mode7MatrixParameterDLo = $000127
+!RAM_GAMEX_Global_Mode7MatrixParameterDHi = !RAM_GAMEX_Global_Mode7MatrixParameterDLo+$01
+!RAM_GAMEX_Global_Mode7CenterXLo = $000128
+!RAM_GAMEX_Global_Mode7CenterXHi = !RAM_GAMEX_Global_Mode7CenterXLo+$01
+!RAM_GAMEX_Global_Mode7CenterYLo = $00012A
+!RAM_GAMEX_Global_Mode7CenterYHi = !RAM_GAMEX_Global_Mode7CenterYLo+$01
+!RAM_GAMEX_Global_BG1And2WindowMaskSettings = $00012C
+!RAM_GAMEX_Global_BG3And4WindowMaskSettings = $00012D
+!RAM_GAMEX_Global_ObjectAndColorWindowSettings = $00012E
+!RAM_GAMEX_Global_BGWindowLogicSettings = $00012F
+!RAM_GAMEX_Global_Window1LeftPositionDesignation = $000130
+!RAM_GAMEX_Global_Window1RightPositionDesignation = $000131
+!RAM_GAMEX_Global_Window2LeftPositionDesignation = $000132
+!RAM_GAMEX_Global_Window2RightPositionDesignation = $000133
+!RAM_GAMEX_Global_ColorAndObjectWindowLogicSettings = $000134
+!RAM_GAMEX_Global_MainScreenLayers = $000135
+!RAM_GAMEX_Global_SubScreenLayers = $000136
+!RAM_GAMEX_Global_MainScreenWindowMask = $000137
+!RAM_GAMEX_Global_SubScreenWindowMask = $000138
+!RAM_GAMEX_Global_ColorMathInitialSettings = $000139
+!RAM_GAMEX_Global_ColorMathSelectAndEnable = $00013A
+!RAM_GAMEX_Global_FixedColorData1 = $00013B
+!RAM_GAMEX_Global_FixedColorData2 = $00013C
+!RAM_GAMEX_Global_FixedColorData3 = $00013D
+!RAM_GAMEX_Global_InitialScreenSettings = $00013E
+!RAM_GAMEX_Global_HCountTimerLo = $00013F
+!RAM_GAMEX_Global_HCountTimerHi = $000140
+!RAM_GAMEX_Global_VCountTimerLo = $000141
+!RAM_GAMEX_Global_VCountTimerHi = $000142
+!RAM_GAMEX_Global_NumberOfDMAUpdates = $000143
+!RAM_GAMEX_Global_FadeDirection = $000144
+!RAM_GAMEX_Global_VBlankRoutineVector = $000145
+!RAM_GAMEX_Global_IRQRoutineVector = $000149
+!RAM_GAMEX_Global_BRKRoutineVector = $00014D
+
+!RAM_GAMEX_Global_OAMBuffer = $000200
+!RAM_GAMEX_Global_OAMTileSizeBuffer = $000420
+
+!RAM_GAMEX_Global_PaletteMirror = $000500
+
+!RAM_GAMEX_Global_DMAUpdateTable = $001E00
+!RAM_GAMEX_Global_EndOfStack = !RAM_GAMEX_Global_StartOfStack-$FF
+!RAM_GAMEX_Global_StartOfStack = $001FFF
+
+!RAM_GAMEX_Global_RAMBufferedRoutines = $7E2000
+
+!RAM_GAMEX_Global_GenericDataBuffer = $7F0000
+
+struct GAMEX_Global_OAMBuffer !RAM_GAMEX_Global_OAMBuffer
+	.XDisp: skip $01
+	.YDisp: skip $01
+	.Tile: skip $01
+	.Prop: skip $01
+endstruct align $04
+
+struct GAMEX_Global_UpperOAMBuffer !RAM_GAMEX_Global_OAMBuffer+$0200
+	.Slot: skip $01
+endstruct align $01
+
+struct GAMEX_Global_OAMTileSizeBuffer !RAM_GAMEX_Global_OAMTileSizeBuffer
+	.Slot: skip $01
+endstruct
+
+struct GAMEX_Global_PaletteMirror !RAM_GAMEX_Global_PaletteMirror
+	.LowByte: skip $01
+	.HighByte: skip $01
+endstruct align $02
+
+struct GAMEX_Global_DMAUpdateTable !RAM_GAMEX_Global_DMAUpdateTable
+	.Parameters: skip $01
+	.Destination: skip $01
+	.SourceLo: skip $01
+	.SourceHi: skip $01
+	.SourceBank: skip $01
+	.ExtraParam: skip $01
+	.SizeLo: skip $01
+	.SizeHi: skip $01
+	.DMAType: skip $02
+	.DestAddressLo: skip $01
+	.DestAddressHi: skip $01	
+endstruct

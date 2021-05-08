@@ -1,3 +1,26 @@
+(5/8/21 V1.1.0 release)
+- Fixed !SA1_BWRAMWriteProtection_Disable being the wrong value.
+- Changed the SRAM Bank for the SuperFX memory map to $700000
+- Made the code that prints the checksum handle leading zeros using asar 1.80's improved hex() command function.
+- Can now specify two ROM sizes in order to be able to handle ROM sizes that aren't powers of 2, but rather the sum of 2 powers of 2 (ex. 1.5 MB).
+- If the ROM size is set to be greater than 4 MB, the framework will auto set the ROM layout to ExLoROM, ExHiROM, or SA-1 LoROM based on the memory layout.
+- Removed the ExLoROM and ExHiROM defines, as those memory maps are now automatically assigned.
+- SRAM/BWRAM/ExRAM/IRAM Map files are now loaded in LoadGameSpecificMainSNESFiles() rather than GlobalAssemblySettings() in order to fix a bug with !SRAMBankBaseAddress not being initialized.
+- The LoadExtraRAMFile() macro now uses the !GameID as parameters, in order to determine whether a SRAM/BWRAM/ExRAM/IRAM Map file should be loaded.
+- Tweaked the SuperFX, ExLoROM, and ExHIROM memory maps to better reflect the layout of those ROM maps.
+- Memory map related data is now read during SuperFX code assembly.
+- Added two new global macros InsertNextPreCompiledCodeBlock() and SetNextPreCompiledCodePointer(). These allow you to insert data that was compiled with a different tool besides asar. They function similarly to the SuperFX code macros.
+- Removed the SuperFX version of the above two macros.
+- Added a new define !SRAMBankMirror/!EXRAMBankMirror/!BWRAMBankMirror that is intended to be ORed onto mirrored BW-RAM or SuperFX Expansion RAM. Which one to use depends on the current memory map.
+- The asset extraction scripts now expect different ROM versions to be named differently.
+- Asar 1.81 is now the minimum asar version needed by the framework.
+- The code disassembly scripts can now generate labels in the middle of code rather than only after opcodes that the CPU can't go past.
+- The %InsertVersionExclusiveFile() now uses an address parameter.
+- %InsertMacroAtXPosition() now works during SPC700 or SuperFX code assembly. By extention, this also affects all global macros that accept an address parameter.
+- %SetDuplicateOrNullPointer() now works during SPC700 or SuperFX code assembly.
+
+;--------------------------------------------------------------------
+
 (1/26/20) (V1.0.1 release)
 - Upgraded to asar 1.81
 - Adjusted the warning/error message for the incorrect version, as it displayed the disassembly version twice rather than the disassembly and framework version.
