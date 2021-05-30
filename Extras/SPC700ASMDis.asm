@@ -1905,6 +1905,9 @@ print "Disassembling from !ROMOffset"
 if !DoTwoPassesFlag == 0
 	!Pass = 1
 endif
+
+!CopyOfSizeOfBlock #= !SizeOfBlock
+
 while !Pass < 2
 	!TotalBlockSize #= $0000
 	!BaseOffsetOffset #= $0000
@@ -1914,6 +1917,8 @@ while !Pass < 2
 		if !ReadSizeOffset == 1
 			!SizeOfBlock #= read2(!ROMOffset+!TotalBlockSize)
 			!TotalBlockSize #= !TotalBlockSize+2
+		else
+			!SizeOfBlock #= !CopyOfSizeOfBlock
 		endif
 		if !SizeOfBlock < 1
 			!InLoop #= 0
