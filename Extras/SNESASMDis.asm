@@ -193,7 +193,7 @@ macro Op9()
 	else
 		%readword()
 		if !Pass == 1
-			print "	ORA.w #$",hex(!Input1, 2)
+			print "	ORA.w #$",hex(!Input1, 4)
 		endif
 	endif
 endmacro
