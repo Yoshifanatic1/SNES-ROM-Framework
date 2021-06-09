@@ -1,3 +1,8 @@
+(6/9/2021 V1.1.1 release)
+- Fix an oversight where the %GetROMSize() call in %CalculateFreespaceRemaining() was missing the parenthesis, breaking the asar patch applying feature.
+
+;--------------------------------------------------------------------
+
 (5/8/21 V1.1.0 release)
 - Fixed !SA1_BWRAMWriteProtection_Disable being the wrong value.
 - Changed the SRAM Bank for the SuperFX memory map to $700000
