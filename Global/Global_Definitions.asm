@@ -137,7 +137,7 @@
 ; These are used by the disassembly framework for certain functions. Not meant for custom use.
 !FrameworkVer = 1
 !FrameworkSubVer = 1
-!FrameworkSubSubVer = 0
+!FrameworkSubSubVer = 1
 !NumOfInsertedSNESHeader = 0
 !InBank = !FALSE
 !CurrentBank = $00
