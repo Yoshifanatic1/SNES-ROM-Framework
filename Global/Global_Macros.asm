@@ -1103,7 +1103,7 @@ endmacro
 ;---------------------------------------------------------------------------
 
 macro CalculateFreespaceRemaining()
-%GetROMSize
+%GetROMSize()
 print "Freespace used by integrated patches: ",freespaceuse
 print "Total Freespace: ", dec(!TotalFreespace)
 reset freespaceuse
