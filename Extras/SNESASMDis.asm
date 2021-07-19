@@ -213,7 +213,7 @@ endmacro
 macro Op12()
 	%readword()
 if !Pass == 1
-	print "	TSB.w $",hex(!Input1, 2)
+	print "	TSB.w $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1728,6 +1728,7 @@ macro Op219()
 if !Pass == 1
 	print "	STP"
 endif
+	%DefineLabelAfterNoPassOpcode(!CurrentOffset)
 endmacro
 
 macro Op220()
