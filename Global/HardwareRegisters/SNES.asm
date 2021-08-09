@@ -636,12 +636,22 @@ macro InsertMacroAtXPosition(Address)
 if !Define_Global_IgnoreCodeAlignments == !FALSE
 	if stringsequal("<Address>", "NULLROM")
 	else
-		if !ROMBankSplitFlag == !TRUE
-			warnpc (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
-			org (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
+		if !InROMMirror == !FALSE
+			if !ROMBankSplitFlag == !TRUE
+				warnpc (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
+				org (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
+			else
+				warnpc <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+				org <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+			endif
 		else
-			warnpc <Address>|!FastROMAddressOffset|!HiROMAddressOffset
-			org <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+			if !ROMBankSplitFlag == !TRUE
+				warnpc (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
+				base (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
+			else
+				warnpc <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+				base <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+			endif
 		endif
 	endif
 endif
