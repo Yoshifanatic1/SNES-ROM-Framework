@@ -251,7 +251,8 @@ Notes:
 
 
 ===Supported ROMs===
-This disassembly framework supports 53 different SNES ROMs currently:
+This disassembly framework supports 54 different SNES ROMs currently:
+- Donkey Kong Country 2 (USA V1.0)
 - EarthBound (USA (incomplete))
 - Earthworm Jim 2 (USA)
 - GameX Base ROM (V1, V2)

@@ -1,3 +1,9 @@
+(8/14/2021 V1.1.2 release)
+- %InsertMacroAtXPosition() now correctly accounts for when ROM Mirroring is in effect, when used during SNES ASM assembly.
+- Added two new scripts to the Extras Folder that simplify setting up asset extraction data and relative pointer tables.
+
+;--------------------------------------------------------------------
+
 (6/9/2021 V1.1.1 release)
 - Fix an oversight where the %GetROMSize() call in %CalculateFreespaceRemaining() was missing the parenthesis, breaking the asar patch applying feature.
 
