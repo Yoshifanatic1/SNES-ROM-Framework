@@ -37,17 +37,12 @@ macro GAMEX_GlobalAssemblySettings()
 	!Define_Global_FixIncorrectChecksumHack = !FALSE
 	!Define_Global_ROMFrameworkVer = 1
 	!Define_Global_ROMFrameworkSubVer = 1
-	!Define_Global_ROMFrameworkSubSubVer = 1
+	!Define_Global_ROMFrameworkSubSubVer = 2
 	!Define_Global_AsarChecksum = $0000
 	!Define_Global_LicenseeName = "N/A"
 	!Define_Global_DeveloperName = "Yoshifanatic"
 	!Define_Global_ReleaseDate = "N/A"
 	!Define_Global_BaseROMMD5Hash = "N/A"
-	!Define_Global_CartridgeHeaderVersion = $00
-	!Define_Global_FixIncorrectChecksumHack = !FALSE
-	!Define_Global_ROMFrameworkVer = 1
-	!Define_Global_ROMFrameworkSubVer = 1
-	!Define_Global_ROMFrameworkSubSubVer = 0
 
 	!Define_Global_MakerCode = "00"
 	!Define_Global_GameCode = "xxxx"

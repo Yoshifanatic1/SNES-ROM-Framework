@@ -37,7 +37,7 @@ macro GAMEX_GlobalAssemblySettings()
 	!Define_Global_FixIncorrectChecksumHack = !FALSE
 	!Define_Global_ROMFrameworkVer = 1
 	!Define_Global_ROMFrameworkSubVer = 1
-	!Define_Global_ROMFrameworkSubSubVer = 1
+	!Define_Global_ROMFrameworkSubSubVer = 2
 	!Define_Global_AsarChecksum = $0000
 	!Define_Global_LicenseeName = "N/A"
 	!Define_Global_DeveloperName = "Yoshifanatic"
