@@ -18,6 +18,8 @@ lorom						; The memory map of the ROM. Change this if the ROM uses a different 
 !LoopCounter = 0
 !Pass = 0
 !CurrentOffset = 0
+!InitialASize #= !16BitA
+!InitialXYSize #= !16BitXY
 
 macro GetOpcode()
 	!Input1 #= read1(!ROMOffset+!ByteCounter)
@@ -108,7 +110,7 @@ if !CorrectErrorsFlag == 1
 	if !16BitXY == 0
 		if read1(!ROMOffset+!ByteCounter+1) == $00
 			!16BitXY #= 1
-		elseif read1(!ROMOffset+!ByteCounter+2) == $02
+		elseif read1(!ROMOffset+!ByteCounter+1) == $02
 			!16BitXY #= 1
 		endif
 	else
@@ -2010,6 +2012,8 @@ if !DoTwoPassesFlag == 1
 	endif
 	!LoopCounter #= 0
 	!ByteCounter #= 0
+	!16BitA #= !InitialASize
+	!16BitXY #= !InitialXYSize
 endif
 	!Pass = 1
 while !ByteCounter < !MaxBytes
