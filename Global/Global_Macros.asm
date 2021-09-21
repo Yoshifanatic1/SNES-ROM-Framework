@@ -204,6 +204,9 @@ incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_LoadGameSpecificMainSNESFiles()
 reset bytes
 incsrc "../!GameID/Custom/Asar_Patches_<CurrentGameID>.asm"
+if !Define_Global_ApplyDefaultPatches == !TRUE
+	%<CurrentGameID>_HandleDefaultPatches()
+endif
 if !Define_Global_ApplyAsarPatches == !TRUE
 	%<CurrentGameID>_ApplyPatchesPostAssembly()
 endif

@@ -1,3 +1,10 @@
+(9/20/2021 V1.1.3 release)
+- Added a new feature for applying default patches after main assembly. This is specifically for stuff like calculating checksums of copy detection routines that can't be done during main assembly.
+- Added a define that enables whether default patches are applied.
+- Added the unused DMA registers to the DMA struct.
+
+;--------------------------------------------------------------------
+
 (8/14/2021 V1.1.2 release)
 - %InsertMacroAtXPosition() now correctly accounts for when ROM Mirroring is in effect, when used during SNES ASM assembly.
 - Added two new scripts to the Extras Folder that simplify setting up asset extraction data and relative pointer tables.

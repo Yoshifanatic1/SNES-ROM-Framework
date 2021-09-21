@@ -43,6 +43,7 @@ Notes:
 ===Global Defines And Files===
 The settings in X_GlobalAssemblySettings() in the ROM Map files
 - !Define_Global_ApplyAsarPatches		- Setting this to true will enable usage of Asar_Patches_X.asm inside the game's custom folder. If this is !FALSE, no patches linked to from within that file will be applied to the ROM
+- !Define_Global_ApplyDefaultPatches		- Setting this to true will enable default patches to be applied after main assembly. This is meant to handle stuff like calculating copy detection checksums that can't be done during main assembly. It's not meant for custom use.
 - !Define_Global_InsertRATSTags			- This setting affects whether the %RATSTagStart() and %RATSTagEnd() global macros function. RATS tags are a method of protecting ROM data from being overwritten, but they only make sense to use if you're applying patches to the assembled ROM rather than modifying the disassembly directly.
 - !Define_Global_IgnoreCodeAlignments		- \ By default, all routine macros are inserted at a fixed ROM location defined inside the macro call, so that these routines will stay in place even if stuff placed before it is removed.
 						  / This is intended for keeping compatibility between the assembled ROM and tools that work with it if this disassembly is used to make a base ROM. Setting this to false will cause all routine macros to at like their address is set to "NULLROM" and thus insert at the earliest possible address of their bank. Setting this will also disable the BeginROMMirroring() macro.
@@ -251,8 +252,9 @@ Notes:
 
 
 ===Supported ROMs===
-This disassembly framework supports 54 different SNES ROMs currently:
+This disassembly framework supports 55 different SNES ROMs currently:
 - Donkey Kong Country 2 (USA V1.0)
+- Donkey Kong Country 3 (USA)
 - EarthBound (USA (incomplete))
 - Earthworm Jim 2 (USA)
 - GameX Base ROM (V1, V2)

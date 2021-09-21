@@ -28,6 +28,7 @@ endmacro
 
 macro GAMEX_GlobalAssemblySettings()
 	!Define_Global_ApplyAsarPatches = !FALSE
+	!Define_Global_ApplyDefaultPatches = !TRUE
 	!Define_Global_InsertRATSTags = !TRUE
 	!Define_Global_IgnoreCodeAlignments = !FALSE
 	!Define_Global_IgnoreOriginalFreespace = !FALSE
@@ -37,7 +38,7 @@ macro GAMEX_GlobalAssemblySettings()
 	!Define_Global_FixIncorrectChecksumHack = !FALSE
 	!Define_Global_ROMFrameworkVer = 1
 	!Define_Global_ROMFrameworkSubVer = 1
-	!Define_Global_ROMFrameworkSubSubVer = 2
+	!Define_Global_ROMFrameworkSubSubVer = 3
 	!Define_Global_AsarChecksum = $0000
 	!Define_Global_LicenseeName = "N/A"
 	!Define_Global_DeveloperName = "Yoshifanatic"

@@ -471,6 +471,10 @@ struct DMA $004300
 	.SourceBank: skip $01
 	.SizeLo: skip $01
 	.SizeHi: skip $01
+	.Unused1: skip $01
+	.Unused2: skip $01
+	.Unused3: skip $01
+	.Unused4: skip $01
 endstruct align $10
 
 struct HDMA $004300
