@@ -1,3 +1,10 @@
+(10/31/2021 V1.2.0 release)
+- Added a memory map for Satelliview games.
+- Added hardware register defines for Satelliview registers.
+- Added a memory map define for custom memory maps, although this feature is not fully supported
+
+;--------------------------------------------------------------------
+
 (9/20/2021 V1.1.3 release)
 - Added a new feature for applying default patches after main assembly. This is specifically for stuff like calculating checksums of copy detection routines that can't be done during main assembly.
 - Added a define that enables whether default patches are applied.

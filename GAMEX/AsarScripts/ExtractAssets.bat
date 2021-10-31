@@ -16,7 +16,7 @@ echo - Music: (Insert version here)
 echo.
 
 :Start
-echo Place a headerless YI ROM with one of the following names in this folder, then type the number representing what ROM to extract from.
+echo Place a headerless GAMEX ROM with one of the following names in this folder, then type the number representing what ROM to extract from.
 echo 0 = "%ROMName0%" (GAMEX V1)
 echo 1 = "%ROMName1%" (GAMEX V2)
 

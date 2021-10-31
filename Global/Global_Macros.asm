@@ -52,7 +52,7 @@ org (!SNESHeaderLoc+$02)|!FastROMAddressOffset|!HiROMAddressOffset
 padbyte $20
 pad (!SNESHeaderLoc+$06)|!FastROMAddressOffset|!HiROMAddressOffset
 org (!SNESHeaderLoc+$06)|!FastROMAddressOffset|!HiROMAddressOffset
-.ReservedSpace		db !Define_Global_ReservedSpace
+.ReservedSpace:		db !Define_Global_ReservedSpace
 padbyte $00
 pad (!SNESHeaderLoc+$0C)|!FastROMAddressOffset|!HiROMAddressOffset
 org (!SNESHeaderLoc+$0C)|!FastROMAddressOffset|!HiROMAddressOffset
@@ -61,7 +61,7 @@ org (!SNESHeaderLoc+$0C)|!FastROMAddressOffset|!HiROMAddressOffset
 .ProgramSpecialVersion:	db !Define_Global_IsSpecialVersion
 .ChipSubType:		db !ExtraChipHeaderByte
 elseif !Define_Global_CartridgeHeaderVersion == $01
-.ReservedSpace		db !Define_Global_ReservedSpace
+.ReservedSpace:		db !Define_Global_ReservedSpace
 .ChipSubType:		db !ExtraChipHeaderByte
 else
 org (!SNESHeaderLoc+$10)|!FastROMAddressOffset|!HiROMAddressOffset
@@ -488,27 +488,30 @@ print "ROM Size: ",dec(!MaxROMSize/!TEMP2)," !TEMP"
 %GetMemoryMap()
 print "ROM Layout: !MemoryMapName"
 
-%GetChipData()
-
-if !Define_Global_ROMType&$0F == !ROMType_ROM
-	!TEMP = "ROM"
-elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM
-	!TEMP = "ROM, RAM"
-elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM_SRAM
-	!TEMP = "ROM, RAM, !SRAMType"
-elseif !Define_Global_ROMType&$0F == !ROMType_ROM_Chip
-	!TEMP = "ROM, Chip"
-elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM_Chip
-	!TEMP = "ROM, RAM, Chip"
-elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM_SRAM_Chip
-	!TEMP = "ROM, RAM, !SRAMType, Chip"
-elseif !Define_Global_ROMType&$0F == !ROMType_ROM_SRAM_Chip
-	!TEMP = "ROM, !SRAMType, Chip"
+if !Define_Global_ROMType == !ROMType_SatellaviewGame
+	print "ROM Contents: ROM, RAM, PSRAM"
 else
-	!TEMP = "Unsupported/Invalid ROM contents combination"
+	%GetChipData()
+	if !Define_Global_ROMType&$0F == !ROMType_ROM
+		!TEMP = "ROM"
+	elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM
+		!TEMP = "ROM, RAM"
+	elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM_SRAM
+		!TEMP = "ROM, RAM, !SRAMType"
+	elseif !Define_Global_ROMType&$0F == !ROMType_ROM_Chip
+		!TEMP = "ROM, Chip"
+	elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM_Chip
+		!TEMP = "ROM, RAM, Chip"
+	elseif !Define_Global_ROMType&$0F == !ROMType_ROM_RAM_SRAM_Chip
+		!TEMP = "ROM, RAM, !SRAMType, Chip"
+	elseif !Define_Global_ROMType&$0F == !ROMType_ROM_SRAM_Chip
+		!TEMP = "ROM, !SRAMType, Chip"
+	else
+		!TEMP = "Unsupported/Invalid ROM contents combination"
+	endif
+	print "ROM Contents: !TEMP"
+	print "Extra Hardware: !ChipName"
 endif
-print "ROM Contents: !TEMP"
-print "Extra Hardware: !ChipName"
 
 if !Define_Global_<SRAMType>Size == !SRAMSize_0KB
 	!TEMP = "0 KB"
@@ -758,6 +761,8 @@ if !Define_Global_ROMSize > !ROMSize_4MB
 	elseif !Define_Global_ROMLayout == !ROMLayout_SPC7110ROM
 		incsrc "../Global/MemoryMap/SPC7110ROM_Memory_Map.asm"
 		!StartOfMirrorBanks #= !StartOfMirrorBanks/$02
+	elseif !Define_Global_ROMLayout == !ROMLayout_Satelliview
+		incsrc "../Global/MemoryMap/Satelliview_Memory_Map.asm"	
 	else
 		incsrc "../Global/MemoryMap/NoROM_Memory_Map.asm"
 	endif
@@ -797,6 +802,11 @@ macro GetChipData()
 !ExtraChipHeaderByte = $00
 !SRAMType = "SRAM"
 !Firmware = ""
+if !Define_Global_ROMType == !ROMType_SatellaviewGame
+	!Define_Global_ROMType #= !Define_Global_ROMType|$E0
+	incsrc "../Global/HardwareRegisters/Satellaview.asm"
+endif
+
 if !Define_Global_CustomChip&$7F == !Chip_None
 	!ChipName = "None"
 	!Firmware = "NULL"
@@ -878,6 +888,11 @@ endmacro
 ;---------------------------------------------------------------------------
 
 macro DisplaySettingMessages()
+if !Define_Global_ROMType == !ROMType_SatellaviewGame
+	assert !Define_Global_ROMSize1|!Define_Global_ROMSize2 < !ROMSize_2MB, "For Satelliview games, the max ROM size you can use for the ROM size defines is 2MB. If you want a larger ROM, you need to set both defines."
+	assert !Define_Global_ROMSize1+!Define_Global_ROMSize2 <= !ROMSize_4MB, "Satelliview games can't be larger than 4MB!"
+endif
+
 if !Define_Global_ROMSize > !ROMSize_4MB
 	warn "Some emulators/flash carts have iffy support for ROM sizes above 4 MB. This ROM size is not recommended if you want to maximize compatibility."
 	if !Define_Global_ROMLayout == !ROMLayout_LoROM
@@ -929,8 +944,10 @@ if !Define_Global_CustomChip != !Chip_None
 		endif
 	endif	
 else
-	if !Define_Global_ROMType&$7F > !ROMType_ROM_Chip
-		warn "You set this ROM to use a chip, yet you didn't specify which one."
+	if !Define_Global_ROMType != !ROMType_SatellaviewGame
+		if !Define_Global_ROMType > !ROMType_ROM_Chip
+			warn "You set this ROM to use a chip, yet you didn't specify which one."
+		endif
 	endif
 endif
 

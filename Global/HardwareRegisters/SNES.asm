@@ -551,7 +551,11 @@ assert !CurrentBank <= $<Bank>, "The bank parameter of BANK_END must be greater 
 assert !InROMMirror == 0, "You must turn off ROM mirroring via EndROMMirroring() before a BANK_END() macro!"
 if !BANKType_<Bank>&$20 != $00
 	if !NumOfInsertedSNESHeader == $00
-		%SNES_Header(!SNESHeaderLoc)
+		if !Define_Global_ROMType == !ROMType_SatellaviewGame
+			%Satelliview_Header(!SNESHeaderLoc)
+		else
+			%SNES_Header(!SNESHeaderLoc)
+		endif
 	endif
 endif
 ;if $<Bank> >= !StartOfMirrorBanks|((!FastROMAddressOffset|!HiROMAddressOffset)>>16)

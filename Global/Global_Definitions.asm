@@ -69,6 +69,8 @@
 !ROMLayout_LoROM_FastROM = $06
 !ROMLayout_HiROM_FastROM = $07
 !ROMLayout_SPC7110ROM = $08
+!ROMLayout_Satelliview = $09
+!ROMLayout_Custom = $0A
 
 ;!Define_Global_ROMType defines
 !ROMType_ROM = $00
@@ -79,6 +81,7 @@
 !ROMType_ROM_RAM_SRAM_Chip = $05
 !ROMType_ROM_SRAM_Chip = $06
 !ROMType_ROM_SRAM_Chip = $06
+!ROMType_SatellaviewGame = $FF
 
 ;!Define_Global_CustomChip defines (Not accurate values to what is stored in header. Refer to GetChipData() to see how the specified chip changes !Define_Global_ROMType's value)
 !Chip_None = $00
@@ -133,11 +136,22 @@
 !ExpansionMemorySize_32KB = $05
 !ExpansionMemorySize_64KB = $06
 
+;Allowed Play Count (Satelliview game only)
+!PlayCount_Infinite = $8000
+
+;Execution Type (Satelliview game only)
+!ExecutionType_PowerDownReceiver = $10
+!ExecutionType_ExecutionArea_Flash = $00
+!ExecutionType_ExecutionArea_FlashToPSRAM = $20
+!ExecutionType_ExecutionArea_Unknown1 = $40
+!ExecutionType_ExecutionArea_Unknown2 = $60
+!ExecutionType_SkipIntro = $80
+
 ; Framework function defines
 ; These are used by the disassembly framework for certain functions. Not meant for custom use.
 !FrameworkVer = 1
-!FrameworkSubVer = 1
-!FrameworkSubSubVer = 3
+!FrameworkSubVer = 2
+!FrameworkSubSubVer = 0
 !NumOfInsertedSNESHeader = 0
 !InBank = !FALSE
 !CurrentBank = $00

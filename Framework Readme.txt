@@ -78,7 +78,18 @@ The settings in X_GlobalAssemblySettings() in the ROM Map files
 	- !ROMLayout_ExLoROM			- Use the ExLoROM memory map, where banks are mapped to the upper half of $00-$7D/$80-$FF.
 	- !ROMLayout_ExHiROM			- Use the ExHiROM memory map, where banks are mapped to $40-$7D/$C0-$FF.
 	- !ROMLayout_SPC7110ROM			- Use the memory map intended to be used with the SPC7110 chip. It's currently not fully implemented.
+	- !ROMLayout_Satelliview		- Use the memory map meant for Satelliview games.
+	- !ROMLayout_Custom			- Not recommended. This will use the "NoROM" memory map, meant for any games that do not fall under any of the other memory maps. 
 - !Define_Global_ROMType			- Defines whether the ROM contains RAM, SRAM, and/or a custom chip, depending on the define used.
+	- !ROMType_ROM				-\ Indicates whether the cartridge has a combination of ROM, RAM, extra RAM, and/or a custom chip.
+	- !ROMType_ROM_RAM			-|
+	- !ROMType_ROM_RAM_SRAM			-|
+	- !ROMType_ROM_Chip			-|
+	- !ROMType_ROM_RAM_Chip			-|
+	- !ROMType_ROM_RAM_SRAM_Chip		-|
+	- !ROMType_ROM_SRAM_Chip		-|
+	- !ROMType_ROM_SRAM_Chip		-/
+	- !ROMType_SatellaviewGame		- Indicates that a ROM is meant to be a Satelliview game. Using this setting will change what cartridge header defines are required. It also gives access to the Satelliview registers.
 - !Define_Global_CustomChip			- Controls what custom chip the cartridge has. This will affect what hardware register defines you can use. Also, some chips will require you to use the $01 or $02 header
 	- !Chip_None				- No custom chip is being used.
 	- !Chip_DSP1				- Use the DSP-1 chip, used in Super Mario Kart and Pilotwings. Requires a firmware file to use.
@@ -111,6 +122,13 @@ The settings in X_GlobalAssemblySettings() in the ROM Map files
 - !Define_Global_Checksum			- Defines what the original game's checksum is in order to compare it to the one that asar generates.
 - !UnusedXModeVectorNum				- Unused bytes in the header. These will usually be something like $FFFF, but some games may have put some data here, or garbage.
 - !XModeYPVector				- Controls various places in bank 00 where the CPU will jump to in some situations.
+
+Header Defines for Satelliview games
+- !Define_Global_ProgramType			- Unknown 4 bytes of data
+- !Define_Global_AllowedPlayCount		- Affects how many times the user is allowed to boot up the game. Set this to !PlayCount_Infinite to allow infinite plays.
+- !Define_Global_Month				- I'm not sure. Perhaps it's the month the game was streamed?
+- !Define_Global_Day				- I'm not sure. Perhaps it's the day the game was streamed?
+- !Define_Global_ExecutionType			- Several flags that control how the game will execute?
 
 The base files used by every disassembly:
 - ROM_Map_X.asm					- Controls how the ROM is set up for each individual ROM version and also contains all the cartridge header and the ROM specific setting defines.
@@ -252,7 +270,8 @@ Notes:
 
 
 ===Supported ROMs===
-This disassembly framework supports 55 different SNES ROMs currently:
+This disassembly framework supports 57 different SNES ROMs currently:
+- BS Zelda no Densetsu (Map 1 Week 2, Map 1 Week 3)
 - Donkey Kong Country 2 (USA V1.0)
 - Donkey Kong Country 3 (USA)
 - EarthBound (USA (incomplete))
