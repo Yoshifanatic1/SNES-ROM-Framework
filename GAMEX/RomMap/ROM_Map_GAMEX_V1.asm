@@ -11,7 +11,7 @@ macro GAMEX_LoadGameSpecificMainSNESFiles()
 	incsrc ../RAM_Map_GAMEX.asm
 	incsrc ../Routine_Macros_GAMEX.asm
 	incsrc ../SNES_Macros_GAMEX.asm
-	%LoadExtraRAMFile("SRAM_Map_GAMEX.asm", !ROMID, GAMEX)
+	%LoadExtraRAMFile("SRAM_Map_GAMEX.asm", !GameID, GAMEX)
 endmacro
 
 macro GAMEX_LoadGameSpecificMainSPC700Files()
