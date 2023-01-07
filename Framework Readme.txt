@@ -17,6 +17,8 @@ Table of Contents (use ctrl+F)
 - Save File Generation
 - Chip Firmware
 - Pre-compiled File Link Protocal
+- RDC File Format
+- Asset Extraction
 - Using the GAMEX Base ROM
 - Making Your Own Disassembly
 - Future Improvements
@@ -206,8 +208,9 @@ Macros inside Global_Macros.asm
 - GetChipData()				- Used specifically to get the current chip and associated data 
 - DisplaySettingMessages()		- Called by DisplayFinalChecksum() to handle displaying various warning messages depending on the assembly and cartridge header settings used.
 - SetROMToAssembleForHack()		- Used to specify which ROM is used as the base when assembling a hacked version.
+- InsertRDCFile()			- Used to insert a block of data stored in an RDC file.
 - LoadExtraRAMFile()			- Used to load the SRAM_Map/ExRAM_Map/ExFlashRAM_Map file when any of the RAM size defines are set greater than 0KB.
-- InsertNextPreCompiledodeBlock()	- This inserts the next portion of the specified pre-compiled file at the location of the macro. It accepts an address as a parameter since InsertMacroAtXPosition() is called by it.
+- ReadPreCompiledFilePointers()		- This stores the start and end pointer to the specified block within a pre-compiled file into !StartOffset and !EndOffset. Intended to be placed before an incbin to the file being referenced in this macro.
 - SetNextPreCompiledCodePointer()	- Each time this macro is called, it reads the next value from the pointer table found at the start of a pre-compiled file, and assigns it to the label you gave to this macro.
 - InsertGarbageData()			- Used to insert a block of garbage code/data into the ROM. These areas act as freespace, meaning the data they control won't be inserted if !Define_Global_IgnoreOriginalFreespace is set to !TRUE.
 - CalculateFreespaceRemaining()		- This is called when !Define_Global_ApplyAsarPatches is enabled in order to display the remaining freespace and how much freespace has been used.
@@ -222,18 +225,16 @@ Macros in the SNES.asm, available during main code assembly
 - EndROMMirroring()			- This is used in conjuction with BeginROMMirroring() to end a mirrored block. You must end ROM mirroring before the end of a bank or else asar will throw an error.
 
 Macros in the SPC700.asm, available during SPC700 code assembly
-- SPCDataBlockStart()			- Acts like BANK_START(), but for SPC700 files. Note that it inserts 4 bytes where it's placed, two bytes containing the size of the block and two bytes containing the ARAM address the block will be inserted at. You must give it a 16-bit ARAM address, which will set where in the ARAM the block will be uploaded to.
-- SPCDataBlockEnd()			- Acts like BANK_END(), but for SPC700 files. You must give it the same 16-bit ARAM address as the corresponding SPCDataBlockStart() macro, or else an error is thrown.
-- EndSPCUploadAndJumpToEngine()		- Defines the end of an SPC700 data block. It inserts 4 bytes where it's placed, $0000 and the address the SPC700 will jump to after uploading is finished.
+- SPC700RoutinePointer()		- This inserts 3 pointers in an SPC700 pre-compiled file. The 1st is the base address that will be used when creating labels with SetNextPreCompiledCodePointer(). The 2nd and 3rd are the start and end offset in the pre-compiled file of where the code/data for that block is located.
 
 Macros in SuperFX_(SNES).asm, available for SuperFX games during main code assembly
 - EnableSuperFXHiROMMirroring()		- This is intented to be used whenever a SuperFX game makes use of the HiROM bank mirror, as SuperFX games lay these banks out differently from every other memory map. Place this at the start of a bank and that bank will be treated as if it's a HiROM bank at (BankID/2)+$400000. As the SuperFX memory map is inherently a loROM memory map, put this macro in an even numbered bank, remove the odd numbered bank after it, and set the even numbered bank to end in the odd numbered bank.
 
 Macros in SuperFX_(SuperFX).asm, available during SuperFX code assembly
-- SuperFXBankStart()			- Acts like SPCDataBlockStart(), but for SuperFX files. Unlike that macro, you assign a 24-bit ROM address instead of a 16-bit one. You also must have at least one instance of SuperFXRoutinePointer() prior to the first call of this macro, or else an error is thrown.
-- SuperFXBankEnd()			- Acts like SPCDataBlockEnd(), but for SuperFX files.
-- SuperFXRoutinePointer()		- This inserts a pointer to the label you give to this macro. These must be placed before the first instance of SuperFXBankStart() or else an error is thrown.
-- EndSuperFXRoutinePointers()		- This marks the end of the SuperFX routine pointer table and must be placed before the first call to SuperFXBankStart().
+- SuperFXRoutinePointer()		- Acts like SPC700RoutinePointer(), but for the SuperFX
+
+Macros in MSU1.asm, available both during MSU-1 assembly or main assembly when using the MSU-1.
+- MSU1RoutinePointer()			- Acts like SPC700RoutinePointer(), but for the MSU-1
 
 Macros inside the ROM Map files
 - X_GameSpecificAssemblySettings()		- Contains game specific setting defines and the defines that control the binary IDs of each ROM version. It also controls what ROM version a hacked ROM uses as a base.
@@ -243,6 +244,9 @@ Macros inside the ROM Map files
 - X_LoadGameSpecificMainSNESFiles()		- Same as X_LoadGameSpecificMainSNESFiles(), except for MSU-1 files.
 - X_GlobalAssemblySettings()			- Contains all the cartridge header defines as well as the ROM specific settings.
 - X_LoadROMMap()				- Contains the list of all the routine macros that will be inserted into the ROM.
+- X_LoadSPC700ROMMap()				- Contains the pointer table and the list of all the routine macros that will be inserted in the pre-compiled SPC700 file.
+- X_LoadSuperFXROMMap()				- Same as X_LoadSPC700ROMMap(), except for the SuperFX
+- X_LoadMSU1ROMMap()				- Same as X_LoadSPC700ROMMap(), except for the MSU-1
 
 Macros that differ depending on whether SNES, SPC700, or SuperFX assembly is occuring.
 - InsertMacroAtXPosition()		- This is called inside every routine macro to insert it at the address specified inside the routine macro call. If the address is set to "NULLROM" or if !Define_Global_IgnoreCodeAlignments is enabled, the routine macro will be inserted at the earliest available byte inside the bank it's in. Note that it changes the base address if used during SPC700 or SuperFX assembly.
@@ -270,8 +274,9 @@ Notes:
 
 
 ===Supported ROMs===
-This disassembly framework supports 57 different SNES ROMs currently:
+This disassembly framework supports 59 different SNES ROMs currently:
 - BS Zelda no Densetsu (Map 1 Week 2, Map 1 Week 3)
+- Donkey Kong Country 1 (USA V1.0)
 - Donkey Kong Country 2 (USA V1.0)
 - Donkey Kong Country 3 (USA)
 - EarthBound (USA (incomplete))
@@ -395,29 +400,23 @@ For convienience, the framework provides a folder for this firmware. Placing the
 
 
 ===Pre-compiled File Link Protocal===
-Due to the nature of the SuperFX chip and the fact that asar doesn't allow referencing labels across different architectures, I've created a system that allows you to be able to assemble that code while being able to link to it within the main assembly.
+Due to the nature of the SuperFX chip, the SPC700, and the fact that asar doesn't allow referencing labels across different architectures, I've created a system that allows you to be able to assemble that code while being able to link to it within the main assembly.
 In additon, perhaps you may be using a custom build of asar or other tool that doesn't work directly with the disassembly. With this, you can compile the code/data while being able to link it to the main assembly.
 
-For a SuperFX code file:
-1). Place a %SuperFXBankStart(XXXXXX) inside your SuperFX code file to mark the beginning of a SuperFX code block. XXXXXX must be the SNES ROM address that this block will be inserted at during main code assembly.
-2). Place a %SuperFXBankEnd(XXXXXX) at the end of the SuperFX code block. Set XXXXXX to be the same value that was used for %SuperFXBankStart() previously. 
-3). Repeat steps 1-2 for each code block that is expected to be inserted at different locations until all the code blocks are accounted for.
-4). Place %SuperFXRoutinePointer(Label) macro calls prior to the first %SuperFXBankStart() call. Set "Label" to a label that you intend on having the SNES tell the SuperFX chip to jump to, data blocks that the SuperFX references that are outside any code blocks, or data blocks that both the SNES and SuperFX reference. Do this for every label this applies to.
-5). Place %EndSuperFXRoutinePointers() to mark the end of the SuperFX pointer table.
+Inside the ROM Map file:
+1). Place a %XXXRoutinePointer(Label, StartOffset, EndOffset) macro for each label that's intended to be linked to during main ROM assembly. Set "Label" to the relevant label, "StartOffset" to a label prior to the routine macro containing the label, and "EndOffset" to a label after the routine macro.
+2). Put all the routine macros after the pointer macros. Each routine macro must be assigned an address to be inserted at.
 
-For a non-SuperFX code file, here is how it should be formatted:
-- All pointers must be 24-bit
-- 2 pointers at the start of the file indicating the start and end of the label pointer table.
-- All the label pointers that will be referenced on the SNES side must be put right after the above pointer table.
-- 3 pointers must be placed at the start of a "bank", the first being the base address the data will be inserted at, the second pointing to the start of the code/data block, and the third pointing to the end.
+For custom pre-compiled files, here is how it should be formatted:
+- All pointers must be 32-bit
+- 1st pointer in a block is the base address the block was given.
+- 2nd pointer is the start offset in the pre-compiled file of where a given block of code/data is.
+- 3rd pointer is the end offset in the pre-compiled file of where a given block of code/data is.
 
 For the main assembly:
 - In the ROM_Map file(s), add an incsrc in LoadGameSpecificMainSNESFiles() to a file that will contain the pointer labels that will be used to link to the pre-compiled code file. Make it the first file loaded in the list of files loaded by this macro.
-- Inside your SuperFX pointer label file add as many %SetNextPreCompiledCodePointer(Label, File, Define) macro calls to it as you placed %SuperFXRoutinePointer() (or label pointers) inside the code file.
-	- Set "Label" to a label name you used for the corresponding entries in the code file, in the order they were assigned.
-	- Set "File" to the file path and name of the pre-compiled file.
-	- Set "Define" to the name of the file.
-- Place %InsertNextPreCompiledCodeBlock($XXXXXX, File, Define) at the locations you want the pre-compiled code to be inserted at. Set XXXXXX to be the value assigned to the %SuperFXBankStart() macros/the address you assigned to pre-compiled file bank, in the order they were assigned, and "File"/"Define" to what they were for the above macro.
+- Inside your pointer label file, add as many %SetNextPreCompiledCodePointer(Label, Index, File) macro calls to it as you placed pointer macros inside the relevant part of the ROM Map. "Label" being the label you want to create, "Index" being which pointer in the file you want to assign the label, and "File" being the path to the pre-compiled file.
+- Place %ReadPreCompiledFilePointers(Index, File) right before you intend on inserting parts of a pre-compiled file. This will set !StartOffset and !EndOffset to the incbin offsets you'll need when inserting a block.
 
 If you did everything right, your disassembly/homebrew project should be all set to work with the pre-compiled code file.
 
@@ -425,7 +424,113 @@ Notes:
 - This system allows one to both link to pre-compiled code/data from the SNES side while also allowing the pointers to auto adjust as stuff from the pre-compiled file is shifted around.
 - If you need to add/remove a pointer/code/data block, you must remove the corresponding pointer/block related macro(s) from both the SNES and pre-compiled file side of things, or else the pointers after the change will become misaligned (ex. If you remove pointer 2 from the pointer list, then pointer 2 on the SNES side will use the value meant for pointer 3).
 - This system allows you to use other compilers for specific components. As long as you set up the pointer tables correctly, asar doesn't care how the pre-compiled data was created.
-- Look at my Yoshi's Island disassembly for an example of how this is done.
+- Look at my Yoshi's Island disassembly (SuperFX) or any disassembly using framework version 1.3.0 or later (SPC700) for an example of how this is done.
+
+
+
+
+===RDC File Format===
+Some games may store data for certain things in a way that would be highly cumbersome to edit manually. To make things easier, I've created a custom file format I call "ROM Data Collection", which groups together blocks of related data into 1 file for easier editing via external tools, sharing, and simple convienience. If you've ever used Lunar Magic when editing SMW, RDC files are much like LM's .mwl files, except more generic and more flexible.
+
+Here is the format of an RDC file in case you want to implement support for this in a ROM hacking tool you're working on:
+0x0000-0x0003 = 32-bit pointer in the file to the start of the data block pointer table. Should point to the first byte after the description.
+0x0004-0x0005 = The number of data blocks stored in the file
+0x0006-0x0007 = The type of data the file contains, to differenciate between RDC files used in different contexts.
+0x0008-0x000F = The GameID of the game this file was generated from.
+0x0010-0x0019 = "RDC V_._._". The underscores being the version of the RDC format this file uses.
+0x001A=0x001F = Padding
+0x0020+ = Description of the file
+
+After the description is the pointer table pointed at with the pointer stored at the start of the file. Each block in this table is assigned 4 32-bit values, specifically in this order:
+- The starting SNES Address of where the data was extracted from (optional. Should be set to $00000000 if not used)
+- The final SNES Address of where the data was extracted from (optional. Should be set to $00000000 if not used)
+- A pointer in the RDC file for where this block is located.
+- The size of the data block.
+
+After this pointer table should be the data for the individual blocks contained within the RDC file.
+
+
+
+
+===Asset Extraction===
+In order to both reduce the size of the disassemblies when distributing them and to make them much less likely to be taken down from draconian copyright laws, my disassemblies don't come with most game assets that are needed to fully assemble the game. Each disassembly using this framework will contain a folder called "AsarScripts" that contains 2 files at minimum:
+- "ExtractAssets.bat", which is the batch script used to specify what ROM to extract assets from and then doing it.
+- "AssetPointersAndFiles.asm", which defines every location in the ROM that will have its data extracted and the file names of the extracted data.
+
+If making your own disassembly with this framework, copy these files from a disassembly using the latest framework, then edit them to suit your game's needs.
+
+For reference, this is the format of the AssetPointersAndFiles.asm.
+- A bunch of defines corresponding to the different ROM versions. These defines don't need to match up with the ones used in the actual disassembly, but the bit values need to match the ones for the corresponding version in ExtractAssets.bat
+
+Example:
+!SMW_U = $0001
+!SMW_J = $0002
+!SMW_E1 = $0004
+!SMW_E2 = $0008
+!SMW_A = $0010
+
+- A pointer table containing the start address and the number of entries in the data structure for every type of file (plus itself). These values are divided by $0C, since each entry in these data structures are 12 bytes large.
+
+Example:
+MainPointerTableStart:
+	dl MainPointerTableStart,MainPointerTableEnd-MainPointerTableStart
+	dl GFXPointersStart,(GFXPointersEnd-GFXPointersStart)/$0C
+	dl GarbageDataPointersStart,(GarbageDataPointersEnd-GarbageDataPointersStart)/$0C
+	dl LevelMusicPointersStart,(LevelMusicPointersEnd-LevelMusicPointersStart)/$0C
+	dl OverworldMusicPointersStart,(OverworldMusicPointersEnd-OverworldMusicPointersStart)/$0C
+	dl CreditsMusicPointersStart,(CreditsMusicPointersEnd-CreditsMusicPointersStart)/$0C
+	dl BRRPointersStart,(BRRPointersEnd-BRRPointersStart)/$0C
+MainPointerTableEnd:
+
+- The file data structures themselves, where each entry contains 4 24-bit entries in the following order:
+	- The starting SNES ROM address of the data or special command
+	- The end address (which will be the byte AFTER the data being extracted). If the first entry is $000000 or $000001, then this is a pointer to another data structure
+	- The starting pointer inside this file to the filename of the extracted data.
+	- The end pointer inside this file to the filename of the extracted data.
+
+Example:
+GFXPointersStart:
+	dl $08D9F9,$08E231,GFXFile00,GFXFile00End
+	dl $08E231,$08ECBB,GFXFile01,GFXFile01End
+GFXPointersEnd:
+
+GFXFile00:
+	db "GFX00.bin"
+GFXFile00End:
+GFXFile01:
+	db "GFX01.bin"
+GFXFile01End:
+
+If the 1st entry in an entry is $000000 or $000001, this will tell the batch script that it should create a single file using data from multiple locations. In this case, the format of the file's entry in the data structure changes:
+	- $000000 (Split file)/ $000001 (RDC file)
+	- The pointer of the data structure for handling the individual parts of this file
+	- The starting pointer inside this file to the filename of the extracted data.
+	- The end pointer inside this file to the filename of the extracted data.
+
+LevelDataPointersStart:
+	dl $000001,LVL_Level1Screen00_Ptrs,LVL_Level1Screen00,LVL_Level1Screen00End
+LevelDataPointersEnd:
+
+LVL_Level1Screen00:
+	db "LVL_Level1Screen00.rdc"
+LVL_Level1Screen00End:
+
+As for the multi-file data structure, the format of that is:
+	- The number of data blocks that will be combined into 1 file.
+	- The "type" of file (only relevant when generating an RDC file)
+	- The start and end pointers for each data block.
+
+Example:
+LVL_Level1Screen00_Ptrs:
+	db $05 : dw $0000
+	dl $898200,$898240					; Layer 1 (Low byte) data
+	dl $89B800,$89B820					; Layer 1 (High byte) data
+	dl $898000,$898040					; Layer 2 (Low byte) data
+	dl $89B700,$89B720					; Layer 2 (High byte) data
+	dl $80E849,$80E84F					; Normal Sprite data
+
+
+
 
 
 
@@ -494,7 +599,7 @@ If the DPR is being used as an index or is being added/subtracted to, you'll hav
 	SNES/SPC700:
 	- Ctrl+F each branch opcode as well as PER to see if they have a label or not.
 	- Ctrl+F JSR/JSL/JMP/JML/CALL to see if all of them have a label/RAM define, depending on where they jump to.
-	- Ctrl+F to find absolute/long indirect indexing (ie. LDA.b ($00)/LDA.b [$00]), then seeing where how the pointer is set.
+	- Ctrl+F to find absolute/long indirect indexing (ie. LDA.b ($00)/LDA.b [$00]), then seeing where the pointer is set.
 	- Ctrl+F to find the DMA registers, then checking what is being set to $43X2-$43X4, with X being 0-7.
 	- Ctrl+F to find all instances of PLB to find cases where the DBR is being changed via something besides PHK.
 	- Ctrl+F to find all instances of MVP/MVN, and see if the values being loaded by it and X/Y are using labels/RAM defines.
@@ -515,7 +620,7 @@ If the DPR is being used as an index or is being added/subtracted to, you'll hav
 - Any of the following can be treated as freespace:
 	- A block of data that's not referenced anywhere and whose purpose is unknown.
 	- Unused code whose code/data references don't line up with existing code. (aka. dead code)
-	- A string of NOPs, if their usage implies deleted opcodes. NOPs being used for timing, self modifying code, padding, or found directly fter SuperFX opcodes that affect R15 or STOP should not be marked as freespace.
+	- A string of NOPs, if their usage implies deleted opcodes. NOPs being used for timing, self modifying code, padding, or found directly after SuperFX opcodes that affect R15 or STOP should not be marked as freespace.
 	- A string of 00s or FFs that's not referenced anywhere.
 Setting !Define_Global_IgnoreOriginalFreespace to !TRUE can help verify if the areas marked as freespace really are freespace. Assuming all hardcoded pointers have been accounted for, anything that breaks in the assembled ROM is missing code/data that should not be marked as freespace.
 - When in doubt, run code in a SNES debugger. That will help if something about the code being disassembled is confusing.
@@ -528,7 +633,7 @@ Setting !Define_Global_IgnoreOriginalFreespace to !TRUE can help verify if the a
 	- Uses stack relative addressing to reference the return address.
 	- Puts the stack pointer into A/X/Direct page
 	- Pulls bytes off the stack without pushing any beforehand.
-- If there are branches, jumps, or subroutine calls in the garbage code and you're disassembly method auto generates labels based on what opcodes were disassembled, it'd be a wise idea to follow the labels if they point somewhere valid. If these labels are only used by garbage opcodes, you should remove them so that your disassembled code is cleaner.
+- If there are branches, jumps, or subroutine calls in the garbage code and your disassembly method auto generates labels based on what opcodes were disassembled, it'd be a wise idea to follow the labels if they point somewhere valid. If these labels are only used by garbage opcodes, you should remove them so that your disassembled code is cleaner.
 - As you get better at disassembly, it'll become easier to distinguish between actual code and data being disassembled as code. Disassembled data looks like gibberish. There is also the fact that the wrong size of A/X/Y with SNES code can make otherwise valid code look like gibberish. Common examples of this:
 	SNES.
 	- Long strings of SBC.l $XXXXXX,x

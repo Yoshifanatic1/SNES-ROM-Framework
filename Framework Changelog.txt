@@ -1,3 +1,20 @@
+(1/7/2023 V1.3.0 release)
+- Created a new file format called "ROM Data Collection", which allows for related files to be extracted and compiled into a single file.
+- SetupSampleBankTable.asm can now handle the last sample pointer and now sets up the file name data for the extraction script.
+- Added a new section to the framework readme on Asset Extraction and the RDC file format.
+- Assembling a ROM now shows whether default patches will be applied or not.
+- Removed the %StripeImageHeader() global macro as that's a remnant of this framework starting as a SMW disassembly and SMW and SMAS are the only games I've looked at that use stripe images.
+- Heavily altered how SPC700 and SuperFX code/data is meant to be handled by the framework. 
+- Removed the %SPCDataBlockStart(), %SPCDataBlockEnd(), %EndSPCUploadAndJumpToEngine() SPC700 specific macro, since not every game handles SPC700 uploads the same. 
+- %SPCDataBlockStart() and %SPCDataBlockEnd now function more like how %SuperFXBankStart() and %SuperFXBankEnd() function. They've also been renamed to %SPC700DataBlockStart() and %SPC700DataBlockEnd()
+- %SetNextPreCompiledCodePointer() now require specifying an index for what part of a pre-compiled file to reference.
+- %InsertNextPreCompiledCodeBlock() has been replaced with %ReadPreCompiledFilePointers()
+- Added %MSU1RoutinePointer(), which is the pointer generation macro for MSU-1 files.
+- Added a disassembly script for NES games to the Extras folder.
+- Added new defines for SPC700 related registers.
+
+;--------------------------------------------------------------------
+
 (10/31/2021 V1.2.0 release)
 - Added a memory map for Satelliview games.
 - Added hardware register defines for Satelliview registers.

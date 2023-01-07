@@ -150,8 +150,11 @@
 ; Framework function defines
 ; These are used by the disassembly framework for certain functions. Not meant for custom use.
 !FrameworkVer = 1
-!FrameworkSubVer = 2
+!FrameworkSubVer = 3
 !FrameworkSubSubVer = 0
+!RDCFileVer = 1
+!RDCFileSubVer = 0
+!RDCFileSubSubVer = 0
 !NumOfInsertedSNESHeader = 0
 !InBank = !FALSE
 !CurrentBank = $00
@@ -164,6 +167,9 @@
 !StartOfMirrorBanks = $00
 !HackROMID = ""
 !SetROMToAssembleForHackCalled = !FALSE
+!SPC700Pointers = $00
+!SPC700BlockIndex = $00
+!MaxSPC700Pointers = $00
 !SuperFXPointers = $00
 !SuperFXBlockIndex = $00
 !MaxSuperFXPointers = $00

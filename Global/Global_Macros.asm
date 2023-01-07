@@ -158,8 +158,11 @@ incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
 %<GameID>_LoadGameSpecificMainSPC700Files()
+
+org $000000
 reset bytes
-incsrc "!PathToFile"
+check bankcross off
+%<GameID>_LoadSPC700ROMMap()
 endmacro
 
 ;---------------------------------------------------------------------------
@@ -184,7 +187,7 @@ norom
 org $000000
 reset bytes
 check bankcross off
-incsrc "!PathToFile"
+%<GameID>_LoadSuperFXROMMap()
 endmacro
 
 ;---------------------------------------------------------------------------
@@ -271,6 +274,7 @@ warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
 warnings disable W1029				; Note: Disable warning about mapper switching
 incsrc "../Global/HardwareRegisters/SNES.asm"
+incsrc "../Global/HardwareRegisters/MSU1.asm"
 ;namespace nested on
 
 incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
@@ -278,9 +282,12 @@ incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
 %<GameID>_LoadGameSpecificMainMSU1Files()
+
+norom
+org $000000
 reset bytes
-incsrc "!PathToFile"
-reset bytes
+check bankcross off
+%<GameID>_LoadMSU1ROMMap()
 endmacro
 
 ;---------------------------------------------------------------------------
@@ -366,47 +373,6 @@ assert !InRATSBlock == !TRUE, "You must put a RATSTagStart macro before calling 
 <EndLabel>:
 	!InRATSBlock = !FALSE
 endif
-endmacro
-
-;---------------------------------------------------------------------------
-
-macro StripeImageHeader(Label, XPos, YPos, Dir, RLE, Layer)
-;To use this macro:
-;- Label must be the label name for the stripe image. This label should be made to be a sublabel for another label (ie. ".Label" instead of "Label:". Also, you must put an identical label with End attached after the block of stripe image data so that the length of the data can be automatically set if RLE is not used.
-; XPos is the starting X position (multiple of 8) to draw the stripe image on the specified layer. (Max is $3F)
-; YPos is the same as above, except for the Y position
-; Dir is the direction to draw the stripe image. 0 = Horizontal 1 = Vertical.
-; RLE should be set to $0001 or greater if you intend on drawing a string of the same two bytes. RLE will be equal to the length you want (Max is $3FFF)
-
-!StripeX = <XPos>
-!StripeY = <YPos>
-!StripeDir = $0000
-!StripeRLE = <RLE>
-if <Layer> == 1
-	!StripeDest = $20
-elseif <Layer> == 2
-	!StripeDest = $30
-elseif <Layer> == 3
-	!StripeDest = $50
-else
-	error The stripe image Layer parameter must be a 1, 2 or 3!
-endif
-
-if <Dir> == 1
-	!StripeDir == $8000
-endif
-
-<Label>:
-	db (!StripeDest|((!StripeX&$20)>>3)|((!StripeY&$18)>>3)|((!StripeY&$20)>>2))&$7F
-	db (!StripeX&$1F)|((!StripeY&$07)<<5)
-
-if !StripeRLE == $0000
-	db ((!StripeDir|(<Label>End-<Label>-$05))&$BFFF)>>8
-	db (((<Label>End-<Label>-$05))&$00FF)
-else
-	db (!StripeDir|((!StripeRLE-$01)>>8))|$40
-	db !StripeRLE-$01
-endif 
 endmacro
 
 ;---------------------------------------------------------------------------
@@ -599,6 +565,13 @@ else
 	!TEMP = "No"
 endif
 print "Apply Custom Asar Patches: !TEMP"
+
+if !Define_Global_ApplyDefaultPatches == !TRUE
+	!TEMP = " Yes"
+else
+	!TEMP = "No"
+endif
+print "Apply Default Patches: !TEMP"
 
 print ""
 endmacro
@@ -1039,6 +1012,39 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
+; Note: This inserts "ROM Data Collection" files
+
+macro InsertRDCFile(Address, DataIndex, File)
+%InsertMacroAtXPosition(<Address>)
+if getfilestatus("<File>") == $00
+	if filesize("<File>") != $00
+		!TEMP1 #= readfile4("<File>", $00000000)				; Pointer past the header
+		!TEMP2 #= readfile1("<File>", $00000004)				; Number of data blocks
+		!TEMP3 #= readfile1("<File>", $00000015)-$30		; Version Number
+		!TEMP4 #= readfile1("<File>", $00000017)-$30		; Sub Version Number
+		!TEMP5 #= readfile1("<File>", $00000019)-$30		; Sub Sub Version Number
+		if !RDCFileVer != !TEMP3
+			warn "This disassembly was made to use RDC file version !TEMP3.!TEMP4.!TEMP5 while this framework version uses RDC file version !RDCFileVer.!RDCFileSubVer.!RDCFileSubSubVer. Now you know why the disassembly failed to assemble."
+		elseif !RDCFileSubVer != !TEMP4
+			warn "This disassembly was made to use RDC file version !TEMP3.!TEMP4.!TEMP5 while this framework version uses RDC file version !RDCFileVer.!RDCFileSubVer.!RDCFileSubSubVer. If it failed to assemble, this is most likely why."
+		elseif !RDCFileSubSubVer != !TEMP5
+			warn "This disassembly was made to use RDC file version !TEMP3.!TEMP4.!TEMP5 while this framework version uses RDC file version !RDCFileVer.!RDCFileSubVer.!RDCFileSubSubVer. There may be some slight incompatibilities."
+		endif
+		if <DataIndex> < !TEMP2 
+			!TEMP3 #= readfile4("<File>", (!TEMP1+$08)+(<DataIndex>*$10))
+			!TEMP4 #= readfile4("<File>", (!TEMP1+$0C)+(<DataIndex>*$10))
+			incbin "<File>":(!TEMP3)-(!TEMP3+!TEMP4)
+		else
+			error "RDC file '<File>' doesn't contain <DataIndex> data blocks! Use an index of 0-",dec(!TEMP2-1)," for this file!"	
+		endif
+	endif
+else
+	error "<File> can't be found or is being used by another program."
+endif
+endmacro
+
+;---------------------------------------------------------------------------
+
 macro LoadExtraRAMFile(Path, CurrentGameID, GameID)
 if stringsequal("<CurrentGameID>", "<GameID>")
 	!TEMP1 = !FALSE
@@ -1070,16 +1076,12 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro InsertNextPreCompiledCodeBlock(Address, Define, File)
-%InsertMacroAtXPosition(<Address>)
+macro ReadPreCompiledFilePointers(Index, File)
 if getfilestatus("<File>") == $00
 	if filesize("<File>") != $00
-		!TEMP1 #= readfile3("<File>", !<Define>BlockIndex+$03)
-			!TEMP2 #= readfile3("<File>", !<Define>BlockIndex+$06)
-		incbin "<File>":(!TEMP1)-(!TEMP2)
-		if !TEMP1 != $00
-			!<Define>BlockIndex #= readfile3("<File>", !<Define>BlockIndex+$06)
-		endif
+		!StartOffset #= readfile3("<File>", (<Index>*$0C)+$04)
+		!EndOffset #= readfile3("<File>", (<Index>*$0C)+$08)
+		!BlockSize #= !EndOffset-!StartOffset
 	endif
 else
 	error "<File> can't be found or is being used by another program."
@@ -1088,26 +1090,19 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro SetNextPreCompiledCodePointer(Label, Define, File)
-if getfilestatus("<File>") == $00
-	if filesize("<File>") != $00
-		if defined("<Define>Pointers") == !FALSE
-			!Max<Define>Pointers #= readfile3("<File>", $000000)
-			!<Define>Pointers #= $03
-			!<Define>BlockIndex #= readfile3("<File>", $000000)
-		endif
-		if !<Define>Pointers < !Max<Define>Pointers
-			<Label> = readfile3("<File>", !<Define>Pointers)
+macro SetNextPreCompiledCodePointer(Label, Index, File)
+if !FileType != !FileType_InitializeROM
+	if getfilestatus("<File>") == $00
+		if filesize("<File>") != $00
+			<Label> = readfile3("<File>", (<Index>*$0C)+$00)
 		else
-			error "The Pre-compiled data pointer table for <File> is smaller than the number of labels you're trying to set!"
+			<Label> = $000000
+			error "<File> is too small!"
 		endif
-	
-		!<Define>Pointers #= !<Define>Pointers+$03
 	else
 		<Label> = $000000
+		error "<File> can't be found or is being used by another program."
 	endif
-else
-	<Label> = $000000
 endif
 endmacro
 

@@ -7,6 +7,7 @@ macro GAMEX_GameSpecificAssemblySettings()
 endmacro
 
 macro GAMEX_LoadGameSpecificMainSNESFiles()
+	incsrc ../SPC700/ARAMPtrs_GAMEX.asm
 	incsrc ../Misc_Defines_GAMEX.asm
 	incsrc ../RAM_Map_GAMEX.asm
 	incsrc ../Routine_Macros_GAMEX.asm
@@ -17,6 +18,7 @@ endmacro
 macro GAMEX_LoadGameSpecificMainSPC700Files()
 	incsrc ../SPC700/ARAM_Map_GAMEX.asm
 	incsrc ../Misc_Defines_GAMEX.asm
+	incsrc ../SPC700/SPC700_Routine_Macros_GAMEX.asm
 	incsrc ../SPC700/SPC700_Macros_GAMEX.asm
 endmacro
 
@@ -37,7 +39,7 @@ macro GAMEX_GlobalAssemblySettings()
 	!Define_Global_CartridgeHeaderVersion = $02
 	!Define_Global_FixIncorrectChecksumHack = !FALSE
 	!Define_Global_ROMFrameworkVer = 1
-	!Define_Global_ROMFrameworkSubVer = 2
+	!Define_Global_ROMFrameworkSubVer = 3
 	!Define_Global_ROMFrameworkSubSubVer = 0
 	!Define_Global_AsarChecksum = $0000
 	!Define_Global_LicenseeName = "N/A"
@@ -128,3 +130,33 @@ RAMBufferedRoutinesEnd:
 %BANK_START(!BANK_07)
 %BANK_END(!BANK_07)
 endmacro
+
+;#############################################################################################################
+;#############################################################################################################
+
+macro GAMEX_LoadSPC700ROMMap()
+%SPC700RoutinePointer(GAMEX_SPC700_Engine_Main, GAMEX_SPC700Block0Start, GAMEX_SPC700Block0End)
+%SPC700RoutinePointer(GAMEX_GlobalSampleBank_Ptrs, GAMEX_SPC700Block1Start, GAMEX_SPC700Block1End)
+
+GAMEX_SPC700Block0Start:
+	%SPC700_GAMEX_SPC700_Engine($0500)
+GAMEX_SPC700Block0End:
+GAMEX_SPC700Block1Start:
+	%SPC700_GAMEX_GlobalSampleBank($0400)
+GAMEX_SPC700Block1End:
+endmacro
+
+;#############################################################################################################
+;#############################################################################################################
+
+macro GAMEX_LoadSuperFXROMMap()
+endmacro
+
+;#############################################################################################################
+;#############################################################################################################
+
+macro GAMEX_LoadMSU1ROMMap()
+endmacro
+
+;#############################################################################################################
+;#############################################################################################################

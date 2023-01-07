@@ -126,7 +126,7 @@ macro Op3()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS0 $",hex(!Input2, 2),", CODE_",hex(!Input1, 2)
+	print "	BBS0 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 

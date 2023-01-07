@@ -34,3 +34,13 @@
 !REGISTER_MSU1_Write_AudioFlags = $2007
 	!MSU1_AudioIsPlayingFlag = $01
 	!MSU1_LoopAudioFlag = $02
+
+;---------------------------------------------------------------------------
+
+; MSU-1 code assembly specific macros
+
+macro MSU1RoutinePointer(Label, BlockStart, BlockEnd)
+	dd <Label>
+	dd <BlockStart>
+	dd <BlockEnd>
+endmacro
