@@ -1,3 +1,27 @@
+(7/7/2023 V1.3.1 release)
+- Added support for the Multiplayer 5 peripheral
+- Made it so that a disassembly will not assemble unless the asset extraction script has been run first.
+- The disassembly folder name is no longer tied to the GameID.
+- Attempting to assemble a valid, but unsupported ROM version now displays a message instead of giving a deluge of error messages.
+- Added a line of dashes in the command window when assembling a ROM or extracting assets to visually separate the input text with the text pertaining to the assembly/extraction itself.
+- During asset extraction, a pointer value of $000001 should now corresponds to a .tpl palette file, $000002-$0000FF correspond to game specific files, and $000100+ corresponds to an RDC file.
+- You can now specify the asar.exe used for asset extraction.
+- Moved "Bank of Defines.txt" and "Half Bank Of Defines.txt" to the Extras folder, since those have nothing to do with the global functionality of the framework.
+- Added opcode length specifiers to opcodes disassembled with SPC700ASMDis.asm.
+- Fixed an oversight where SPC700 opcode 0x0A "OR1 C, $0000" in SPC700ASMDis.asm always disassembled with a 1 in the opcode.
+- Fixed an oversight where SPC700 opcode 0xDF "DAA A" in SPC700ASMDis.asm was missing the single A.
+- Added the batch script DisassembleASM.bat to the Extras folder to provide an easier way to use the various disassembly scripts that also outputs the code to a separate file instead of the command line.
+- Increased the default number of bytes disassembled in the various disassembly scripts to cover a full lorom bank (except SPC700ASMDis.asm, which is set to half a lorom bank due to SPC700 engines not typically being very large)
+- Removed the "<File> is too small!" error from %SetNextPreCompiledCodePointer() due to being redundant when the precompiled file fails to assemble from compiler errors.
+- %ReadPreCompiledFilePointers() now defaults to initializing its defines to 0 to prevent redundant errors when the file it's reading from failed to compile.
+- Added a check in the extraction script to prevent the script from crashing if AssetPointersAndFiles.asm contains a compilation error.
+- MVN//MVP parameters now disassemble as "$YY0000>>16,$XX0000>>16" instead of "$YY,$XX" in SNESASMDis.asm.
+- Added a blank disassembly script to the Extras folder, which can be used as a base for a custom disassembly script.
+- The readword() and readlong() macros in SNESASMDis.asm/SPC700ASMDis.asm now require specifying a variable, much like readbyte() already did.
+- Fixed a bug in the various disassembly scripts where !CurrentOffset wasn't initialized correctly, which could prevent a label from generating at the start of a code block.
+
+;--------------------------------------------------------------------
+
 (1/7/2023 V1.3.0 release)
 - Created a new file format called "ROM Data Collection", which allows for related files to be extracted and compiled into a single file.
 - SetupSampleBankTable.asm can now handle the last sample pointer and now sets up the file name data for the extraction script.

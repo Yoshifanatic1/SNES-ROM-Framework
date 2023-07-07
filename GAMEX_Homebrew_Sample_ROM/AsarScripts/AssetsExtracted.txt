@@ -1,0 +1,1 @@
+This file is used to tell the assembly script that the assets have been extracted. Do not delete this file. 

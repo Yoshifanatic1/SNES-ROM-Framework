@@ -274,45 +274,11 @@ Notes:
 
 
 ===Supported ROMs===
-This disassembly framework supports 59 different SNES ROMs currently:
-- BS Zelda no Densetsu (Map 1 Week 2, Map 1 Week 3)
-- Donkey Kong Country 1 (USA V1.0)
-- Donkey Kong Country 2 (USA V1.0)
-- Donkey Kong Country 3 (USA)
-- EarthBound (USA (incomplete))
-- Earthworm Jim 2 (USA)
-- GameX Base ROM (V1, V2)
-- Faceball 2000 (USA)
-- Frogger (USA)
-- Goof Troop (USA)
-- Jurassic Park 1 (USA V1.0)
-- Kirby's Dream Land 3 (USA/Japan)
-- Mega Man 7 (USA)
-- Mario & Yoshi's Strange Quests (SMW ROM hack by Yoshifanatic)
-- Mario Paint (USA/Japan)
-- Ms. Pac-Man (USA)
-- Pac-Man 2: The New Adventures (USA)
-- Plok! (USA, PAL, Japan, French (incomplete), German (incomplete))
-- SimCity (USA)
-- Speedy Gonzales: Los Gatos Banditos (USA V1.0, USA V1.1)
-- Super Mario All-Stars (USA, Japan V1.0, Japan V1.1, PAL)
-- Super Mario All-Stars + Super Mario World (USA, PAL)
-- Super Mario Bros. (USA, PAL, Japan)
-- Super Mario Bros. The Lost Levels (USA, PAL, Japan)
-- Super Mario Bros. 2 (USA, PAL, Japan)
-- Super Mario Bros. 3 (USA, PAL, Japan)
-- Super Mario Kart (USA V1.0, USA V1.1)
-- Super Mario RPG: Legend of the Seven Stars (USA)
-- Super Mario World (USA, Japan, PAL V1.0, PAL V1.1, Japan (Arcade))
-- Super Mario World 2: Yoshi's Island (USA V1.0, USA V1.1)
-- Williams Arcade's Greatest Hits (USA)
-- Wario's Woods (USA)
+This disassembly framework supports 60+ different ROMs across 30+ games. Visit my GitHub repositories page to see what games are supported: https://github.com/Yoshifanatic1?tab=repositories
 
 Notes:
+- The SMW/SMAS/SMAS+W disassembly supports the most ROMs, as it supports 5 SMW ROMs, 4 SMAS ROMs, 2 SMAS+W ROMs, and 12 custom standalone ROMs for the individual games in SMAS.
 - In theory, 90% of all official SNES games could be made to work within this framework. The main exceptions being games that require features asar currently doesn't support or games that use hardware that's either poorly documented or not supported well enough by this framework.
-
-
-
 
 ===Custom ROM Versions===
 So, you want to make a ROM hack using the disassembly, but you want more control over it than what the custom folder offers. Well, the framework supports making your own custom ROM versions. To do this:
@@ -501,8 +467,8 @@ GFXFile01:
 	db "GFX01.bin"
 GFXFile01End:
 
-If the 1st entry in an entry is $000000 or $000001, this will tell the batch script that it should create a single file using data from multiple locations. In this case, the format of the file's entry in the data structure changes:
-	- $000000 (Split file)/ $000001 (RDC file)
+If the 1st entry in an entry is $000000-$007FFF, this will tell the batch script that it should create a single file using data from multiple locations. In this case, the format of the file's entry in the data structure changes:
+	- $000000 (Split file) / $000001 (.tpl palette file) / $000002-$0000FF (game specific file) / $000100-$007FFF (RDC file)
 	- The pointer of the data structure for handling the individual parts of this file
 	- The starting pointer inside this file to the filename of the extracted data.
 	- The end pointer inside this file to the filename of the extracted data.
@@ -529,10 +495,30 @@ LVL_Level1Screen00_Ptrs:
 	dl $89B700,$89B720					; Layer 2 (High byte) data
 	dl $80E849,$80E84F					; Normal Sprite data
 
+If extracting a .tpl file, the format of the multi-file data structure is different:
+	- The number of data blocks that will be combined into 1 file.
+	- How many bytes to pad the end of the file
+	- The padding bytes prior to the next block, the start pointer, and end pointer for each data block.
 
+Example:
+PAL_Layer3_IntroCutscene_SmallSuperstarLetter_Ptrs:
+	db $0E : dw $0018
+	dl $000000,$89F6CA,$89F6D2		; Orange
+	dl $000018,$89F6D4,$89F6DC		; Magenta 1
+	dl $000018,$89F6DE,$89F6E6		; White 1
+	dl $000018,$89F6E8,$89F6F0		; Green 1
+	dl $000018,$89F6F2,$89F6FA		; Blue
+	dl $000018,$89F862,$89F86A		; Yellow
+	dl $000018,$89F86C,$89F874		; Magenta 2
+	dl $000018,$89F876,$89F87E		; Cyan 2
+	dl $000018,$89F880,$89F888		; Green 2
+	dl $000018,$89F88A,$89F892		; White 2
+	dl $000018,$89F894,$89F89C		; Red
+	dl $000018,$89F89E,$89F8A6		; Tan
+	dl $000018,$89F8A8,$89F8B0		; Dull Blue
+	dl $000018,$89F8B2,$89F8BA		; White 3
 
-
-
+This will create a .tpl file where each palette that's part of the file is given its own row.
 
 ===Using the GAMEX Base ROM===
 Unlike most of the ROMs supported by this disassembly, this is not an actual game disassembly. This is a base ROM made by me that is intended for homebrew game development and as a base for new disassemblies. At the bare minimum needed to make use of it, here is what you need to do:
@@ -585,6 +571,7 @@ The difficulty of disassembling a game will depend on a lot of different factors
 - Games that make heavy usage of absolute addressing, a DBR of $7E/$7F, and make heavy usage of RAM addresses in certain ranges can make it harder to identify the hardware registers in the code.
 - Games that heavily modify the DBR require more code examination, since it makes it harder to tell what the absolute address referenced are pointing to.
 - HiROM games that place code in the lower half of its banks are harder to disassemble than LoROM games, since it's harder to tell what is a ROM address and what is a RAM/register address. With LoROM games, assuming the DBR is pointing to ROM, any absolute address in the $8000-$FFFF ranger is automatically a ROM address.
+- Games that put ROM pointers in constants are harder to get the disassembly into an edit friendly state.
 
 Notes:
 - Start by looking at the ROM header at $00FFC0. That will tell you all the information that you need in order to fill out all the ROM_Map defines. You'll have to do some external research to fill in any that can't be determined by the header.
@@ -608,7 +595,7 @@ If the DPR is being used as an index or is being added/subtracted to, you'll hav
 	SuperFX:
 	- Ctrl+F to find all instances where R15/$301E is being set, as that's the SuperFx program counter. To a lesser extent is R13/$301A, as that's the address LOOP jumps to.
 	- Ctrl+F to find all instances where ROMB is used, as that affects what ROM bank is referenced by the code.
-- It's highly recommended that you use the opcode length specifiers (ie. .b/.w/.l) on the disassembled SNES ASM code. This is so that you have full control over how asar assembled the disassembly.
+- It's highly recommended that you use the opcode length specifiers (ie. .b/.w/.l) on the disassembled SNES/SPC700 ASM code. This is so that you have full control over how asar assembled the disassembly.
 - If you find a big block of code that's highly repetitive, it might be a wise idea to create a game specific macro for it.
 - Generally speaking, the first thing that gets sent over to the SPC700 is the engine. You can easily find the routine that uploads it by checking for writes to $002140-$002143.
 - Consider adding comments if you come across bits of code that seem like they could be better optimized or problematic code that might make a ROM hacker's job harder.
@@ -629,6 +616,21 @@ Setting !Define_Global_IgnoreOriginalFreespace to !TRUE can help verify if the a
 - The SuperFX has a sort of multi-stage pipeline design, where it can decode the next opcode while the current one is being processed. So, the opcode immediately after something that changes the program counter is executed before the branch takes place. How you deal with this is up to you.
 - For games that have a huge amount of pointers to data you have yet to identify, it'd be wise to paste the labels for those pointers in a separate file and organize them based on the routine/RAM address the label is for. That way, you can keep track of potentially different data types when you go to identify them.
 - The SuperFX has "ALT" opcodes that change the behavior of various instructions. SuperFX code can and will jump in the middle of these ALT instructions, so you'll need to account for that.
+- If a game has a file that crosses a bank border, but one of the banks with the file contains stuff that shouldn't cross bank borders, you can use this incbin math to handle it without having to physically split the file:
+
+Label1:
+	incbin "FileName.bin":0-($XXXXXX-((Label1-$010000)&$00FFFF))
+.End:
+
+Label2:
+	incbin "FileName.bin":(Label1_End-Label1)-($XXXXXX-((Label2-$010000)&$00FFFF))
+.End:
+
+Label3:
+	incbin "FileName.bin":(Label2_End-Label1)-
+
+$XXXXXX should be a multiple of $010000, based on how many banks the file spans across in a given block. Also, you can omit the second incbin command if a file only spans 2 banks.
+
  If the opcodes found after a JSR/JSL/CALL make no sense and the code before those opcodes was valid, it's possible that the bytes after it are parameters for that routine. If the routine does the following, then those bytes are parameters:
 	- Uses stack relative addressing to reference the return address.
 	- Puts the stack pointer into A/X/Direct page
@@ -637,23 +639,30 @@ Setting !Define_Global_IgnoreOriginalFreespace to !TRUE can help verify if the a
 - As you get better at disassembly, it'll become easier to distinguish between actual code and data being disassembled as code. Disassembled data looks like gibberish. There is also the fact that the wrong size of A/X/Y with SNES code can make otherwise valid code look like gibberish. Common examples of this:
 	SNES.
 	- Long strings of SBC.l $XXXXXX,x
-	- Long strings of NOP
-	- WDM/STP/COP/BRK/XCE/RTI/CLI/CLV/SEI/SED/CLD/WAI/TSC/TCS/TSX/TXS, as those are useless/infrequently used opcodes.
-	- Instances where something is loaded into A/X/Y repeatedly. (ex. LDA #$80 : LDA #$81 : LDA #$80)
+	- Long strings of the same branch instruction.
+	- WDM/STP/COP/BRK/XCE/RTI/CLI/CLV/SEI/SED/CLD/WAI/TSC/TCS/TSX/TXS/PEI/PER/BVC/BVS, as those are useless/infrequently used opcodes.
+	- Instances where something is loaded into A/X/Y repeatedly. (ex. LDA #$80 : LDA #$81 : LDA #$80), unless it's being used to waste time on purpose (ex. $4203 was referenced nearby),
 	- REP/SEPs affecting flags besides the size or carry flags, which are the 3 most common.
-	- MVP/MVN that lack a proper setup before execution.
-	- Branches/Jumps/subroutine calls that point to open bus, registers, RAM. There are exceptions for the latter however.
+	- MVP/MVN that lack a proper setup before execution or whose bank bytes point to strange banks.
+	- Branches/Jumps/subroutine calls that point to open bus, registers, or seemingly random RAM addresses. There are exceptions for the latter two however. Some games may use the DMA registers as "FastRAM".
 	- Strange usage of indirect indexing, especially if the game in question rarely uses this type of addressing.
 	- Strange usage of stack relative addressing, especially if the game in question rarely uses this type of addressing.
 	- EOR.w #$1AFF or EOR.b #$FF : SBC.l which often means that A is the wrong size.
 	- A string of stack commands that makes no sense in context.
+	- JMP.w [$XXXX] with a nonsensical RAM address parameter.
+	- CMP.w #$XXXX/CPX.w #$XXXX/CPY.w #$XXXX/BIT.w #$XXXX/AND.w #$XXXX//EOR.w #$XXXX with a 10, 30, 90, B0, D0, or F0 as the high byte, which may indicate that a branch opcode is being covered up by the CMP/CPX/CPY/BIT/AND/EOR.
+	- LDA.w #$48XX/LDX.w #$DAXX/LDY.w #$5AXX which may be LDA.b #$XX : PHA/LDX.b #$XX : PHX/LDY.b #$XX : PHY if followed by a PLB.
+	- LDA.w #$18XX/LDA.w #$38XX, which may be LDA.b #$XX : CLC/LDA.b #$XX : SEC if followed by an ADC/SBC respectively.
+	- AND.w #$YYXX/ORA.w #$YYXX/EOR.w #$YYXX/ADC.w #$YYXX//SBC.w #$YYXX when YY is AA or A8, which may be AND.b #$XX/ORA.b #$XX/EOR.b #$XX/ADC.b #$XX/SBC.b #$XX/ followed by a TAX/TAY
+	- Seemingly random opcodes that aren't influenced by the size of A/X/Y following a JSR/JSL. This could indicate that that routine references parameters stored immediately after the JSR/JSL via the return address.
 	SPC700
 	- STOP/SLEEP/DI/EI/BRK/RETI/DAA/DAS, as those are either useless/infrequently used opcodes.
-	- Long strings of NOP
+	- Long strings of the same branch instruction.
+	- A string of stack commands that makes no sense in context.
 	SuperFX
 	- Long strings of STOP opcodes or STOPs that are not followed by a NOP.
-	- Long strings of NOP
 	- Long strings of IWT R15, #$FFFF
+	- Long strings of the same branch instruction.
 
 
 ===Future Improvements===
@@ -664,7 +673,6 @@ Here are a list of ideas for possible improvements to this ROM framework. Note t
 - Make the GAMEX ROM work with the SA-1/SuperFX if the user sets the chip to one of those.
 - Add full support for the more obscure chips/peripherals/memory maps. Their files lack defines or are untested.
 - Add a 12 MB ROM size option. I need a proper implementation of the ExLoROM/ExHiROM memory maps before this can be done.
-- Make it so that setting the ROM size past 4 MB will automatically use ExLoROM/ExHiROM if using standard LoROM/HiROM or the FastROM varients.
 - Potentially modify the bank system so that switching the memory map will auto-adjust the ROM data/SRAM to match the new memory map. Currently, switching from HiROM to LoROM causes issues.
 - Add a custom memory map feature that specifies the exact memory map for a game, meant for any games that doesn't fit the mold defined by any normal memory map.
 - Improve the code disassembly scripts to add new features. One idea being to generate labels in between code rather than only after a terminating or always branching opcode.

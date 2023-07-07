@@ -126,6 +126,7 @@
 !Controller_BarcodeBattler = $008000
 !Controller_SFCModem = $010000
 !Controller_VoiceKun = $020000
+!Controller_Multiplayer5 = $040000
 
 ;!Define_Global_Hack_ExpansionFlashSize/!Define_Global_ExpansionRAMSize defines
 !ExpansionMemorySize_0KB = $00
@@ -151,7 +152,7 @@
 ; These are used by the disassembly framework for certain functions. Not meant for custom use.
 !FrameworkVer = 1
 !FrameworkSubVer = 3
-!FrameworkSubSubVer = 0
+!FrameworkSubSubVer = 1
 !RDCFileVer = 1
 !RDCFileSubVer = 0
 !RDCFileSubSubVer = 0

@@ -2,7 +2,7 @@
 
 ;---------------------------------------------------------------------------
 
-macro StartOfROM(CurrentGameID, GameID, ROMID)
+macro StartOfROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
@@ -10,7 +10,7 @@ warnings disable W1029				; Note: Disable warning about mapper switching
 incsrc "../Global/HardwareRegisters/SNES.asm"
 ;namespace nested on
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GameSpecificAssemblySettings()
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
@@ -18,7 +18,7 @@ incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_LoadGameSpecificMainSNESFiles()
 reset bytes
 %<GameID>_LoadROMMap()
-incsrc "../<GameID>/Custom/Asar_Patches_<GameID>.asm"
+incsrc "../<MainFolder>/Custom/Asar_Patches_<GameID>.asm"
 reset bytes
 endmacro
 
@@ -117,7 +117,7 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro InitializeROM(CurrentGameID, GameID, ROMID)
+macro InitializeROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
@@ -127,7 +127,7 @@ warnings disable W1029				; Note: Disable warning about mapper switching
 print "Yoshifanatic's SNES ROM Framework, Version !FrameworkVer.!FrameworkSubVer.!FrameworkSubSubVer"
 print ""
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GameSpecificAssemblySettings()
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
@@ -143,7 +143,7 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro InitializeSPCROM(CurrentGameID, GameID, ROMID)
+macro InitializeSPCROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
@@ -153,7 +153,7 @@ arch spc700-raw
 incsrc "../Global/HardwareRegisters/SPC700.asm"
 ;namespace nested on
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GameSpecificAssemblySettings()
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
@@ -167,7 +167,7 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro InitializeSuperFXROM(CurrentGameID, GameID, ROMID)
+macro InitializeSuperFXROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $008000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
@@ -176,7 +176,7 @@ arch superfx
 ;namespace nested on
 
 incsrc "HardwareRegisters/SuperFX_(SuperFX).asm"
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GameSpecificAssemblySettings()
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
@@ -192,12 +192,12 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro FinalizeROM(CurrentGameID, GameID, ROMID)
+macro FinalizeROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
 warnings disable W1019				; Note: Disable warning about db "STAR"
 ;namespace nested on
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GameSpecificAssemblySettings()
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
@@ -206,7 +206,7 @@ incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
 %GetMemoryMap()
 %<GameID>_LoadGameSpecificMainSNESFiles()
 reset bytes
-incsrc "../!GameID/Custom/Asar_Patches_<CurrentGameID>.asm"
+incsrc "../<MainFolder>/Custom/Asar_Patches_<CurrentGameID>.asm"
 if !Define_Global_ApplyDefaultPatches == !TRUE
 	%<CurrentGameID>_HandleDefaultPatches()
 endif
@@ -217,14 +217,14 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro DisplayFinalChecksum(CurrentGameID, GameID, ROMID)
+macro DisplayFinalChecksum(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
 warnings disable W1029				; Note: Disable warning about mapper switching
 ;namespace nested on
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
 %GetROMSize()
@@ -252,14 +252,14 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro GetFirmwareFile(CurrentGameID, GameID, ROMID)
+macro GetFirmwareFile(CurrentGameID, GameID, ROMID, MainFolder)
 org $008000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
 warnings disable W1029				; Note: Disable warning about mapper switching
 ;namespace nested on
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
 %GetChipData()
@@ -268,7 +268,7 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro InitializeMSU1ROM(CurrentGameID, GameID, ROMID)
+macro InitializeMSU1ROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
@@ -277,7 +277,7 @@ incsrc "../Global/HardwareRegisters/SNES.asm"
 incsrc "../Global/HardwareRegisters/MSU1.asm"
 ;namespace nested on
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GameSpecificAssemblySettings()
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
@@ -292,7 +292,7 @@ endmacro
 
 ;---------------------------------------------------------------------------
 
-macro GenerateSaveFile(CurrentGameID, GameID, ROMID)
+macro GenerateSaveFile(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
 warnings disable W1011				; Note: Disable freespace leak warning.
 warnings disable W1019				; Note: Disable warning about db "STAR"
@@ -300,7 +300,7 @@ warnings disable W1029				; Note: Disable warning about mapper switching
 incsrc "../Global/HardwareRegisters/SNES.asm"
 ;namespace nested on
 
-incsrc "../<GameID>/RomMap/ROM_Map_!ROMID.asm"
+incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 %<GameID>_GlobalAssemblySettings()
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
 %<GameID>_GameSpecificAssemblySettings()
@@ -656,6 +656,10 @@ else
 		%AppendListOfItemsToPrint(TEMP2, TEMP, "Voice-Kun")
 		incsrc "../Global/Controllers/VoiceKun.asm"
 	endif
+	if !Define_Global_CompatibleControllers&$040000 == !Controller_Multiplayer5
+		%AppendListOfItemsToPrint(TEMP2, TEMP, "Multiplayer 5")
+		incsrc "../Global/Controllers/Multiplayer5.asm"
+	endif
 endif
 endmacro
 
@@ -908,11 +912,11 @@ if !Define_Global_CustomChip != !Chip_None
 		warn "You set this ROM to use a chip, yet you didn't set \!Define_Global_ROMType to specify this ROM is supposed to have a chip."
 	endif
 	if !Define_Global_CustomChip&$7F == !Chip_DSP1A
-		if canreadfile1("../!GameID/dsp1a.bin", 1) == !FALSE
+		if canreadfile1("../!MainFolder/dsp1a.bin", 1) == !FALSE
 			warn "This ROM is set to use the DSP-1A chip, but the firmware file, dsp1a.bin, was not found in the Firmware folder. The ROM may not work without it! Do a web search for it if you don't have it."
 		endif
 	elseif !Define_Global_CustomChip&$7F == !Chip_DSP1B
-		if canreadfile1("../!GameID/dsp1b.bin", 1) == !FALSE
+		if canreadfile1("../!MainFolder/dsp1b.bin", 1) == !FALSE
 			warn "This ROM is set to use the DSP-1B chip, but the firmware file, dsp1b.bin, was not found in the Firmware folder. The ROM may not work without it! Do a web search for it if you don't have it."
 		endif
 	endif	
@@ -1077,6 +1081,9 @@ endmacro
 ;---------------------------------------------------------------------------
 
 macro ReadPreCompiledFilePointers(Index, File)
+!StartOffset #= 0
+!EndOffset #= 0
+!BlockSize #= !EndOffset-!StartOffset
 if getfilestatus("<File>") == $00
 	if filesize("<File>") != $00
 		!StartOffset #= readfile3("<File>", (<Index>*$0C)+$04)
@@ -1097,7 +1104,6 @@ if !FileType != !FileType_InitializeROM
 			<Label> = readfile3("<File>", (<Index>*$0C)+$00)
 		else
 			<Label> = $000000
-			error "<File> is too small!"
 		endif
 	else
 		<Label> = $000000
