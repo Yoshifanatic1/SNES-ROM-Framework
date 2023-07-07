@@ -1,14 +1,14 @@
 @asar 1.81
 
 ; Modify these as needed
-lorom						; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
-!CorrectErrorsFlag = 1				; If 1, this script will change the size of A/X/Y in some situations besides REP/SEP. For example, if the instruction after an LDA.b #$00 is BRK, A will be changed to 16-bit.
-!16BitA = 0					; If 1, A will start off as 16-bit during disassembly. Otherwise, it will be 8-bit
-!16BitXY = 0					; If 1, X/Y will start off as 16-bit during disassembly. Otherwise, they'll be 8-bit
+lorom								; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
+!CorrectErrorsFlag = 1			; If 1, this script will change the size of A/X/Y in some situations besides REP/SEP. For example, if the instruction after an LDA.b #$00 is BRK, A will be changed to 16-bit.
+!16BitA = 0						; If 1, A will start off as 16-bit during disassembly. Otherwise, it will be 8-bit
+!16BitXY = 0						; If 1, X/Y will start off as 16-bit during disassembly. Otherwise, they'll be 8-bit
 !ROMOffset = $008000				; The ROM offset to begin disassembly from.
-!Bank = 00					; Affects the bank byte for the label used in JSR/JMP instructions.
+!Bank = 00							; Affects the bank byte for the label used in JSR/JMP instructions.
 !DoTwoPassesFlag = 1				; If 1, the script will run twice, with the purpose of generating labels that appear before the branch that points to it. Turning this on may slow down disassembly speed, however.
-!MaxBytes = 16384				; The maximum amount of bytes that will be read at a time. Setting this lower/higher will speed up/slow down disassembly.
+!MaxBytes = 32768					; The maximum amount of bytes that will be read at a time. Setting this lower/higher will speed up/slow down disassembly.
 
 ; Don't touch these
 !Input1 = $00
@@ -17,7 +17,7 @@ lorom						; The memory map of the ROM. Change this if the ROM uses a different 
 !ByteCounter = 0
 !LoopCounter = 0
 !Pass = 0
-!CurrentOffset = 0
+!CurrentOffset #= !ROMOffset
 !InitialASize #= !16BitA
 !InitialXYSize #= !16BitXY
 
@@ -35,15 +35,15 @@ macro readbyte(Input)
 	!CurrentOffset #= !ROMOffset+!ByteCounter
 endmacro
 
-macro readword()
-	!Input1 #= read2(!ROMOffset+!ByteCounter)
+macro readword(Input)
+	!<Input> #= read2(!ROMOffset+!ByteCounter)
 	;!Input1 = $0123
 	!ByteCounter #= !ByteCounter+2
 	!CurrentOffset #= !ROMOffset+!ByteCounter
 endmacro
 
-macro readlong()
-	!Input1 #= read3(!ROMOffset+!ByteCounter)
+macro readlong(Input)
+	!<Input> #= read3(!ROMOffset+!ByteCounter)
 	;!Input1 = $012345
 	!ByteCounter #= !ByteCounter+3
 	!CurrentOffset #= !ROMOffset+!ByteCounter
@@ -193,7 +193,7 @@ macro Op9()
 			print "	ORA.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	ORA.w #$",hex(!Input1, 4)
 		endif
@@ -213,28 +213,28 @@ endif
 endmacro
 
 macro Op12()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	TSB.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op13()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ORA.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op14()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ASL.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op15()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	ORA.l $",hex(!Input1, 6)
 endif
@@ -304,7 +304,7 @@ endif
 endmacro
 
 macro Op25()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ORA.w $",hex(!Input1, 4),",y"
 endif
@@ -323,35 +323,35 @@ endif
 endmacro
 
 macro Op28()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	TRB.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op29()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ORA.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op30()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ASL.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op31()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	ORA.l $",hex(!Input1, 6),",x"
 endif
 endmacro
 
 macro Op32()
-	%readword()
+	%readword(Input1)
 	!Input2 #= !Input1+($!Bank<<16)
 	%HandleJump(!Input2)
 if !Pass == 1
@@ -367,7 +367,7 @@ endif
 endmacro
 
 macro Op34()
-	%readlong()
+	%readlong(Input1)
 	%HandleJump(!Input1)
 if !Pass == 1
 	print "	JSL.l CODE_",hex(!Input1, 6)
@@ -423,7 +423,7 @@ macro Op41()
 			print "	AND.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	AND.w #$",hex(!Input1, 4)
 		endif
@@ -443,28 +443,28 @@ endif
 endmacro
 
 macro Op44()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	BIT.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op45()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	AND.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op46()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ROL.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op47()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	AND.l $",hex(!Input1, 6)
 endif
@@ -534,7 +534,7 @@ endif
 endmacro
 
 macro Op57()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	AND.w $",hex(!Input1, 4),",y"
 endif
@@ -553,28 +553,28 @@ endif
 endmacro
 
 macro Op60()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	BIT.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op61()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	AND.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op62()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ROL.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op63()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	AND.l $",hex(!Input1, 6),",x"
 endif
@@ -612,7 +612,7 @@ macro Op68()
 	%readbyte(Input1)
 	%readbyte(Input2)
 if !Pass == 1
-	print "	MVP $",hex(!Input1, 2),",$",hex(!Input2, 2)
+	print "	MVP $",hex(!Input1, 2),"0000>>16,$",hex(!Input2, 2),"0000>>16"
 endif
 endmacro
 
@@ -651,7 +651,7 @@ macro Op73()
 			print "	EOR.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	EOR.w #$",hex(!Input1, 4)
 		endif
@@ -671,7 +671,7 @@ endif
 endmacro
 
 macro Op76()
-	%readword()
+	%readword(Input1)
 	!Input2 #= !Input1+($!Bank<<16)
 	%HandleJump(!Input2)
 if !Pass == 1
@@ -681,21 +681,21 @@ endif
 endmacro
 
 macro Op77()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	EOR.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op78()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LSR.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op79()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	EOR.l $",hex(!Input1, 6)
 endif
@@ -734,7 +734,7 @@ macro Op84()
 	%readbyte(Input1)
 	%readbyte(Input2)
 if !Pass == 1
-	print "	MVN $",hex(!Input1, 2),",$",hex(!Input2, 2)
+	print "	MVN $",hex(!Input1, 2),"0000>>16,$",hex(!Input2, 2),"0000>>16"
 endif
 endmacro
 
@@ -766,7 +766,7 @@ endif
 endmacro
 
 macro Op89()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	EOR.w $",hex(!Input1, 4),",y"
 endif
@@ -785,7 +785,7 @@ endif
 endmacro
 
 macro Op92()
-	%readlong()
+	%readlong(Input1)
 	%HandleJump(!Input1)
 if !Pass == 1
 	print "	JML.l CODE_",hex(!Input1, 6)
@@ -794,21 +794,21 @@ endif
 endmacro
 
 macro Op93()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	EOR.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op94()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LSR.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op95()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	EOR.l $",hex(!Input1, 6),",x"
 endif
@@ -829,8 +829,8 @@ endif
 endmacro
 
 macro Op98()
-	%readword()
-	%HandleBranch($8000, !ByteCounter)
+	%readword(Input1)
+	%HandleBranch($8000, !ByteCounter+$01)
 if !Pass == 1
 	print "	PER.w CODE_",hex(!Input1+$01, 6),"-$01"
 endif
@@ -885,7 +885,7 @@ macro Op105()
 			print "	ADC.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	ADC.w #$",hex(!Input1, 4)
 		endif
@@ -906,7 +906,7 @@ endif
 endmacro
 
 macro Op108()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	JMP.w ($",hex(!Input1, 4),")"
 endif
@@ -914,21 +914,21 @@ endif
 endmacro
 
 macro Op109()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ADC.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op110()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ROR.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op111()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	ADC.l $",hex(!Input1, 6)
 endif
@@ -998,7 +998,7 @@ endif
 endmacro
 
 macro Op121()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ADC.w $",hex(!Input1, 4),",y"
 endif
@@ -1017,7 +1017,7 @@ endif
 endmacro
 
 macro Op124()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	JMP.w ($",hex(!Input1, 4),",x)"
 endif
@@ -1025,21 +1025,21 @@ endif
 endmacro
 
 macro Op125()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ADC.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op126()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	ROR.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op127()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	ADC.l $",hex(!Input1, 6),",x"
 endif
@@ -1062,7 +1062,7 @@ endif
 endmacro
 
 macro Op130()
-	%readword()
+	%readword(Input1)
 	%HandleBranch($8000, !ByteCounter)
 if !Pass == 1
 	print "	BRL.w CODE_",hex(!Input1, 6)
@@ -1119,7 +1119,7 @@ macro Op137()
 			print "	BIT.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	BIT.w #$",hex(!Input1, 4)
 		endif
@@ -1139,28 +1139,28 @@ endif
 endmacro
 
 macro Op140()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	STY.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op141()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	STA.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op142()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	STX.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op143()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	STA.l $",hex(!Input1, 6)
 endif
@@ -1230,7 +1230,7 @@ endif
 endmacro
 
 macro Op153()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	STA.w $",hex(!Input1, 4),",y"
 endif
@@ -1249,28 +1249,28 @@ endif
 endmacro
 
 macro Op156()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	STZ.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op157()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	STA.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op158()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	STZ.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op159()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	STA.l $",hex(!Input1, 6),",x"
 endif
@@ -1284,7 +1284,7 @@ macro Op160()
 			print "	LDY.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	LDY.w #$",hex(!Input1, 4)
 		endif
@@ -1306,7 +1306,7 @@ macro Op162()
 			print "	LDX.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	LDX.w #$",hex(!Input1, 4)
 		endif
@@ -1362,7 +1362,7 @@ macro Op169()
 			print "	LDA.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	LDA.w #$",hex(!Input1, 4)
 		endif
@@ -1382,28 +1382,28 @@ endif
 endmacro
 
 macro Op172()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LDY.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op173()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LDA.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op174()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LDX.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op175()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	LDA.l $",hex(!Input1, 6)
 endif
@@ -1473,7 +1473,7 @@ endif
 endmacro
 
 macro Op185()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LDA.w $",hex(!Input1, 4),",y"
 endif
@@ -1492,28 +1492,28 @@ endif
 endmacro
 
 macro Op188()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LDY.w $",hex(!Input1, 4),",x"	
 endif
 endmacro
 
 macro Op189()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LDA.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op190()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	LDX.w $",hex(!Input1, 4),",y"
 endif
 endmacro
 
 macro Op191()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	LDA.l $",hex(!Input1, 6),",x"
 endif
@@ -1527,7 +1527,7 @@ macro Op192()
 			print "	CPY.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	CPY.w #$",hex(!Input1, 4)
 		endif
@@ -1603,7 +1603,7 @@ macro Op201()
 			print "	CMP.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	CMP.w #$",hex(!Input1, 4)
 		endif
@@ -1623,28 +1623,28 @@ endif
 endmacro
 
 macro Op204()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	CPY.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op205()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	CMP.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op206()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	DEC.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op207()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	CMP.l $",hex(!Input1, 6)
 endif
@@ -1714,7 +1714,7 @@ endif
 endmacro
 
 macro Op217()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	CMP.w $",hex(!Input1, 4),",y"
 endif
@@ -1734,7 +1734,7 @@ endif
 endmacro
 
 macro Op220()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	JMP.w [$",hex(!Input1, 4),"]"
 endif
@@ -1742,21 +1742,21 @@ endif
 endmacro
 
 macro Op221()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	CMP.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op222()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	DEC.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op223()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	CMP.l $",hex(!Input1, 6),",x"
 endif
@@ -1770,7 +1770,7 @@ macro Op224()
 			print "	CPX.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	CPX.w #$",hex(!Input1, 4)
 		endif
@@ -1846,7 +1846,7 @@ macro Op233()
 			print "	SBC.b #$",hex(!Input1, 2)
 		endif
 	else
-		%readword()
+		%readword(Input1)
 		if !Pass == 1
 			print "	SBC.w #$",hex(!Input1, 4)
 		endif
@@ -1866,28 +1866,28 @@ endif
 endmacro
 
 macro Op236()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	CPX.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op237()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	SBC.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op238()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	INC.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op239()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	SBC.l $",hex(!Input1, 6)
 endif
@@ -1923,7 +1923,7 @@ endif
 endmacro
 
 macro Op244()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	PEA.w $",hex(!Input1, 4)
 endif
@@ -1957,7 +1957,7 @@ endif
 endmacro
 
 macro Op249()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	SBC.w $",hex(!Input1, 4),",y"
 endif
@@ -1976,33 +1976,34 @@ endif
 endmacro
 
 macro Op252()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	JSR.w ($",hex(!Input1, 4),",x)"
 endif
 endmacro
 
 macro Op253()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	SBC.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op254()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
 	print "	INC.w $",hex(!Input1, 4),",x"
 endif
 endmacro
 
 macro Op255()
-	%readlong()
+	%readlong(Input1)
 if !Pass == 1
 	print "	SBC.l $",hex(!Input1, 6),",x"
 endif
 endmacro
 
+%HandleJump(!CurrentOffset)
 org !ROMOffset
 if !DoTwoPassesFlag == 1
 	while !ByteCounter < !MaxBytes
@@ -2014,6 +2015,7 @@ if !DoTwoPassesFlag == 1
 	!ByteCounter #= 0
 	!16BitA #= !InitialASize
 	!16BitXY #= !InitialXYSize
+	!CurrentOffset #= !ROMOffset
 endif
 	!Pass = 1
 while !ByteCounter < !MaxBytes

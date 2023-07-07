@@ -1,15 +1,15 @@
 @asar 1.81
 
 ; Modify these as needed
-lorom						; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
-!GetBaseOffsetFromROM = 1			; If 1, this script will get the base offset of a block from the ROM. Some games may not put a base offset at the start of an SPC block, so turn this off in those cases.
+lorom								; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
+!GetBaseOffsetFromROM = 1		; If 1, this script will get the base offset of a block from the ROM. Some games may not put a base offset at the start of an SPC block, so turn this off in those cases.
 !ReadSizeOffset = 1				; If 1, this script will get the size of a block from the ROM. Turning this on will also cause the script to automatically disassemble the next block until one of size 0000 is encountered. Some games may not put the size of a block at the start of an SPC block, so turn this off in those cases.
 !BaseOffset = $0500				; This is the base offset used if !GetBaseOffsetFromROM = 0
 !EngineOffset = 0500				; This contains the base offset of the address the SPC700 should jump to when the final block is uploaded.
 !ROMOffset = $0E8000				; The ROM offset to begin disassembly from.
 !SizeOfBlock #= $0100				; This is the size of a block to disassemble if !ReadSizeOffset = 0
 !DoTwoPassesFlag = 1				; If 1, the script will run twice, with the purpose of generating labels that appear before the branch that points to it. Turning this on may slow down disassembly speed, however.
-!MaxBytes = 8192				; The maximum amount of bytes that will be read if an SPC block doesn't end sooner. Setting this lower/higher will speed up/slow down disassembly.
+!MaxBytes = 16384					; The maximum amount of bytes that will be read if an SPC block doesn't end sooner. Setting this lower/higher will speed up/slow down disassembly.
 
 !Input1 = $00
 !Input2 = $00
@@ -19,7 +19,7 @@ lorom						; The memory map of the ROM. Change this if the ROM uses a different 
 !TEMP2 = ""
 !TEMP4 = ""
 !Pass = 0
-!CurrentOffset = 0
+!CurrentOffset #= !ROMOffset
 
 macro GetOpcode()
 	!Input1 #= read1(!ROMOffset+!BaseOffsetOffset+!TotalBlockSize)
@@ -40,8 +40,8 @@ macro readbyte(Input)
 	!CurrentOffset #= !ROMOffset+!ByteCounter
 endmacro
 
-macro readword()
-	!Input1 #= read2(!ROMOffset+!BaseOffsetOffset+!TotalBlockSize)
+macro readword(Input)
+	!<Input> #= read2(!ROMOffset+!BaseOffsetOffset+!TotalBlockSize)
 	;!Input1 = $0123
 	!ByteCounter #= !ByteCounter+2
 	!BaseOffsetOffset #= !BaseOffsetOffset+2
@@ -117,7 +117,7 @@ endmacro
 macro Op2()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET0 $",hex(!Input1, 2)
+	print "	SET0.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -126,41 +126,41 @@ macro Op3()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS0 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS0.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op4()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	OR A, $",hex(!Input1, 2)
+	print "	OR.b A, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op5()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	OR A, $",hex(!Input1, 4)
+	print "	OR.w A, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op6()
 if !Pass == 1
-	print "	OR A, (X)"
+	print "	OR.b A, (X)"
 endif
 endmacro
 
 macro Op7()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	OR A, ($",hex(!Input1, 2),"+x)"
+	print "	OR.b A, ($",hex(!Input1, 2),"+x)"
 endif
 endmacro
 
 macro Op8()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	OR A, #$",hex(!Input1, 2)
+	print "	OR.b A, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -168,28 +168,29 @@ macro Op9()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	OR $",hex(!Input1, 2),", $",hex(!Input2, 2)
+	print "	OR.b $",hex(!Input1, 2),", $",hex(!Input2, 2)
 endif
 endmacro
 
 macro Op10()
-	%readword()
+	%readword(Input1)
+	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	OR1 C, $",hex(!Input1, 4)
+	print "	OR",hex(!TEMP2, 1),".w C, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op11()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ASL $",hex(!Input1, 2)
+	print "	ASL.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op12()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	ASL $",hex(!Input1, 4)
+	print "	ASL.w $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -200,9 +201,9 @@ endif
 endmacro
 
 macro Op14()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	TSET $",hex(!Input1, 4),", A"
+	print "	TSET.w $",hex(!Input1, 4),", A"
 endif
 endmacro
 
@@ -217,7 +218,7 @@ macro Op16()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BPL CODE_",hex(!Input1, 4)
+	print "	BPL.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -230,7 +231,7 @@ endmacro
 macro Op18()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR0 $",hex(!Input1, 2)
+	print "	CLR0.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -239,35 +240,35 @@ macro Op19()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC0 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC0.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op20()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	OR A, $",hex(!Input1, 2),"+x"
+	print "	OR.b A, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
 macro Op21()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	OR A, $",hex(!Input1, 4),"+x"
+	print "	OR.w A, $",hex(!Input1, 4),"+x"
 endif
 endmacro
 
 macro Op22()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	OR A, $",hex(!Input1, 4),"+y"
+	print "	OR.w A, $",hex(!Input1, 4),"+y"
 endif
 endmacro
 
 macro Op23()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	OR A, ($",hex(!Input1, 2),")+y"
+	print "	OR.b A, ($",hex(!Input1, 2),")+y"
 endif
 endmacro
 
@@ -275,7 +276,7 @@ macro Op24()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	OR $",hex(!Input1, 2),", #$",hex(!Input2, 2)
+	print "	OR.b $",hex(!Input1, 2),", #$",hex(!Input2, 2)
 endif
 endmacro
 
@@ -288,14 +289,14 @@ endmacro
 macro Op26()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	DECW $",hex(!Input1, 2)
+	print "	DECW.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op27()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ASL $",hex(!Input1, 2),"+x"
+	print "	ASL.b $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
@@ -312,16 +313,16 @@ endif
 endmacro
 
 macro Op30()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	CMP X, $",hex(!Input1, 4)
+	print "	CMP.w X, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op31()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	JMP ($",hex(!Input1, 4),"+x)"
+	print "	JMP.w ($",hex(!Input1, 4),"+x)"
 endif
 	%DefineLabelAfterNoPassOpcode(!CurrentOffset)
 endmacro
@@ -341,7 +342,7 @@ endmacro
 macro Op34()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET1 $",hex(!Input1, 2)
+	print "	SET1.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -350,41 +351,41 @@ macro Op35()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS1 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS1.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op36()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	AND A, $",hex(!Input1, 2)
+	print "	AND.b A, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op37()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	AND A, $",hex(!Input1, 4)
+	print "	AND.w A, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op38()
 if !Pass == 1
-	print "	AND A, (X)"
+	print "	AND.b A, (X)"
 endif
 endmacro
 
 macro Op39()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	AND A, ($",hex(!Input1, 2),"+x)"
+	print "	AND.b A, ($",hex(!Input1, 2),"+x)"
 endif
 endmacro
 
 macro Op40()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	AND A, #$",hex(!Input1, 2)
+	print "	AND.b A, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -392,29 +393,29 @@ macro Op41()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	AND $",hex(!Input1, 2),", $",hex(!Input2, 2)
+	print "	AND.b $",hex(!Input1, 2),", $",hex(!Input2, 2)
 endif
 endmacro
 
 macro Op42()
-	%readword()
+	%readword(Input1)
 	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	OR",hex(!TEMP2, 1)," C, !$",hex(!Input1, 4)
+	print "	OR",hex(!TEMP2, 1),".w C, !$",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op43()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ROL $",hex(!Input1, 2)
+	print "	ROL.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op44()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	ROL $",hex(!Input1, 4)
+	print "	ROL.w $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -429,7 +430,7 @@ macro Op46()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	CBNE $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	CBNE.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -437,7 +438,7 @@ macro Op47()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BRA CODE_",hex(!Input1, 4)
+	print "	BRA.b CODE_",hex(!Input1, 4)
 endif
 	%DefineLabelAfterNoPassOpcode(!CurrentOffset)
 endmacro
@@ -446,7 +447,7 @@ macro Op48()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BMI CODE_",hex(!Input1, 4)
+	print "	BMI.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -459,7 +460,7 @@ endmacro
 macro Op50()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR1 $",hex(!Input1, 2)
+	print "	CLR1.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -468,35 +469,35 @@ macro Op51()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC1 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC1.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op52()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	AND A, $",hex(!Input1, 2),"+x"
+	print "	AND.b A, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
 macro Op53()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	AND A, $",hex(!Input1, 4),"+x"
+	print "	AND.w A, $",hex(!Input1, 4),"+x"
 endif
 endmacro
 
 macro Op54()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	AND A, $",hex(!Input1, 4),"+y"
+	print "	AND.w A, $",hex(!Input1, 4),"+y"
 endif
 endmacro
 
 macro Op55()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	AND A, ($",hex(!Input1, 2),")+y"
+	print "	AND.b A, ($",hex(!Input1, 2),")+y"
 endif
 endmacro
 
@@ -504,7 +505,7 @@ macro Op56()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	AND $",hex(!Input1, 2),", #$",hex(!Input2, 2)
+	print "	AND.b $",hex(!Input1, 2),", #$",hex(!Input2, 2)
 endif
 endmacro
 
@@ -517,14 +518,14 @@ endmacro
 macro Op58()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	INCW $",hex(!Input1, 2)
+	print "	INCW.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op59()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ROL $",hex(!Input1, 2),"+x"
+	print "	ROL.b $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
@@ -543,15 +544,15 @@ endmacro
 macro Op62()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP X, $",hex(!Input1, 2)
+	print "	CMP.b X, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op63()
-	%readword()
+	%readword(Input1)
 	%HandleAbsoluteAddressJump()
 if !Pass == 1
-	print "	CALL CODE_",hex(!Input1, 4)
+	print "	CALL.w CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -570,7 +571,7 @@ endmacro
 macro Op66()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET2 $",hex(!Input1, 2)
+	print "	SET2.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -579,21 +580,21 @@ macro Op67()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS2 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS2.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op68()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	EOR A, $",hex(!Input1, 2)
+	print "	EOR.b A, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op69()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	EOR A, $",hex(!Input1, 4)
+	print "	EOR.w A, $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -606,14 +607,14 @@ endmacro
 macro Op71()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	EOR A, ($",hex(!Input1, 2),"+x)"
+	print "	EOR.b A, ($",hex(!Input1, 2),"+x)"
 endif
 endmacro
 
 macro Op72()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	EOR A, #$",hex(!Input1, 2)
+	print "	EOR.b A, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -621,29 +622,29 @@ macro Op73()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	EOR $",hex(!Input1, 2),", $",hex(!Input2, 2)
+	print "	EOR.b $",hex(!Input1, 2),", $",hex(!Input2, 2)
 endif
 endmacro
 
 macro Op74()
-	%readword()
+	%readword(Input1)
 	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	AND",hex(!TEMP2, 1)," C, $",hex(!Input1, 4)
+	print "	AND",hex(!TEMP2, 1),".w C, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op75()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	LSR $",hex(!Input1, 2)
+	print "	LSR.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op76()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	LSR $",hex(!Input1, 4)
+	print "	LSR.w $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -654,16 +655,16 @@ endif
 endmacro
 
 macro Op78()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	TCLR $",hex(!Input1, 4),", A"
+	print "	TCLR.w $",hex(!Input1, 4),", A"
 endif
 endmacro
 
 macro Op79()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	PCALL $FF",hex(!Input1, 2)
+	print "	PCALL.w $FF",hex(!Input1, 2)
 endif
 endmacro
 
@@ -671,7 +672,7 @@ macro Op80()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BVC CODE_",hex(!Input1, 4)
+	print "	BVC.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -684,7 +685,7 @@ endmacro
 macro Op82()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR2 $",hex(!Input1, 2)
+	print "	CLR2.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -693,35 +694,35 @@ macro Op83()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC2 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC2.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op84()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	EOR A, $",hex(!Input1, 2),"+x"
+	print "	EOR.b A, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
 macro Op85()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	EOR A, $",hex(!Input1, 4),"+x"
+	print "	EOR.w A, $",hex(!Input1, 4),"+x"
 endif
 endmacro
 
 macro Op86()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	EOR A, $",hex(!Input1, 4),"+y"
+	print "	EOR.w A, $",hex(!Input1, 4),"+y"
 endif
 endmacro
 
 macro Op87()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	EOR A, ($",hex(!Input1, 2),")+y"
+	print "	EOR.b A, ($",hex(!Input1, 2),")+y"
 endif
 endmacro
 
@@ -729,7 +730,7 @@ macro Op88()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	EOR $",hex(!Input1, 2),", #$",hex(!Input2, 2)
+	print "	EOR.b $",hex(!Input1, 2),", #$",hex(!Input2, 2)
 endif
 endmacro
 
@@ -742,14 +743,14 @@ endmacro
 macro Op90()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMPW YA, $",hex(!Input1, 2)
+	print "	CMPW.b YA, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op91()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	LSR $",hex(!Input1, 2),"+x"
+	print "	LSR.b $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
@@ -766,17 +767,17 @@ endif
 endmacro
 
 macro Op94()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	CMP Y, $",hex(!Input1, 4)
+	print "	CMP.w Y, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op95()
-	%readword()
+	%readword(Input1)
 	%HandleAbsoluteAddressJump()
 if !Pass == 1
-	print "	JMP CODE_",hex(!Input1, 4)
+	print "	JMP.w CODE_",hex(!Input1, 4)
 endif
 	%DefineLabelAfterNoPassOpcode(!CurrentOffset)
 endmacro
@@ -796,7 +797,7 @@ endmacro
 macro Op98()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET3 $",hex(!Input1, 2)
+	print "	SET3.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -805,21 +806,21 @@ macro Op99()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS3 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS3.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op100()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP A, $",hex(!Input1, 2)
+	print "	CMP.b A, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op101()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	CMP A, $",hex(!Input1, 4)
+	print "	CMP.w A, $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -832,14 +833,14 @@ endmacro
 macro Op103()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP A, ($",hex(!Input1, 2),"+x)"
+	print "	CMP.b A, ($",hex(!Input1, 2),"+x)"
 endif
 endmacro
 
 macro Op104()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP A, #$",hex(!Input1, 2)
+	print "	CMP.b A, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -847,29 +848,29 @@ macro Op105()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP $",hex(!Input1, 2),", $",hex(!Input2, 2)
+	print "	CMP.b $",hex(!Input1, 2),", $",hex(!Input2, 2)
 endif
 endmacro
 
 macro Op106()
-	%readword()
+	%readword(Input1)
 	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	AND",hex(!TEMP2, 1)," C, !$",hex(!Input1, 4)
+	print "	AND",hex(!TEMP2, 1),".w C, !$",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op107()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ROR $",hex(!Input1, 2)
+	print "	ROR.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op108()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	ROR $",hex(!Input1, 4)
+	print "	ROR.w $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -884,7 +885,7 @@ macro Op110()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	DBNZ $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	DBNZ.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -899,7 +900,7 @@ macro Op112()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BVS CODE_",hex(!Input1, 4)
+	print "	BVS.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -912,7 +913,7 @@ endmacro
 macro Op114()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR3 $",hex(!Input1, 2)
+	print "	CLR3.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -921,35 +922,35 @@ macro Op115()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC3 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC3.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op116()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP A, $",hex(!Input1, 2),"+x"
+	print "	CMP.b A, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
 macro Op117()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	CMP A, $",hex(!Input1, 4),"+x"
+	print "	CMP.w A, $",hex(!Input1, 4),"+x"
 endif
 endmacro
 
 macro Op118()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	CMP A, $",hex(!Input1, 4),"+y"
+	print "	CMP.w A, $",hex(!Input1, 4),"+y"
 endif
 endmacro
 
 macro Op119()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP A, ($",hex(!Input1, 2),")+y"
+	print "	CMP.b A, ($",hex(!Input1, 2),")+y"
 endif
 endmacro
 
@@ -957,7 +958,7 @@ macro Op120()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP $",hex(!Input1, 2),", #$",hex(!Input2, 2)
+	print "	CMP.b $",hex(!Input1, 2),", #$",hex(!Input2, 2)
 endif
 endmacro
 
@@ -970,14 +971,14 @@ endmacro
 macro Op122()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADDW YA, $",hex(!Input1, 2)
+	print "	ADDW.b YA, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op123()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ROR $",hex(!Input1, 2),"+x"
+	print "	ROR.b $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
@@ -996,7 +997,7 @@ endmacro
 macro Op126()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP Y, $",hex(!Input1, 2)
+	print "	CMP.b Y, $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1022,7 +1023,7 @@ endmacro
 macro Op130()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET4 $",hex(!Input1, 2)
+	print "	SET4.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1031,21 +1032,21 @@ macro Op131()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS4 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS4.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op132()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADC A, $",hex(!Input1, 2)
+	print "	ADC.b A, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op133()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	ADC A, $",hex(!Input1, 4)
+	print "	ADC.w A, $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1058,14 +1059,14 @@ endmacro
 macro Op135()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADC A, ($",hex(!Input1, 2),"+x)"
+	print "	ADC.b A, ($",hex(!Input1, 2),"+x)"
 endif
 endmacro
 
 macro Op136()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADC A, #$",hex(!Input1, 2)
+	print "	ADC.b A, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1073,36 +1074,36 @@ macro Op137()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADC $",hex(!Input1, 2),", $",hex(!Input2, 2)
+	print "	ADC.b $",hex(!Input1, 2),", $",hex(!Input2, 2)
 endif
 endmacro
 
 macro Op138()
-	%readword()
+	%readword(Input1)
 	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	EOR",hex(!TEMP2, 1)," C, $",hex(!Input1, 4)
+	print "	EOR",hex(!TEMP2, 1),".w C, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op139()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	DEC $",hex(!Input1, 2)
+	print "	DEC.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op140()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	DEC $",hex(!Input1, 4)
+	print "	DEC.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op141()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV Y, #$",hex(!Input1, 2)
+	print "	MOV.b Y, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1116,7 +1117,7 @@ macro Op143()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),", #$",hex(!Input2, 2)
+	print "	MOV.b $",hex(!Input1, 2),", #$",hex(!Input2, 2)
 endif
 endmacro
 
@@ -1124,7 +1125,7 @@ macro Op144()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BCC CODE_",hex(!Input1, 4)
+	print "	BCC.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1137,7 +1138,7 @@ endmacro
 macro Op146()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR4 $",hex(!Input1, 2)
+	print "	CLR4.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1146,35 +1147,35 @@ macro Op147()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC4 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC4.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op148()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADC A, $",hex(!Input1, 2),"+x"
+	print "	ADC.b A, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
 macro Op149()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	ADC A, $",hex(!Input1, 4),"+x"
+	print "	ADC.w A, $",hex(!Input1, 4),"+x"
 endif
 endmacro
 
 macro Op150()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	ADC A, $",hex(!Input1, 4),"+y"
+	print "	ADC.w A, $",hex(!Input1, 4),"+y"
 endif
 endmacro
 
 macro Op151()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADC A, ($",hex(!Input1, 2),")+y"
+	print "	ADC.b A, ($",hex(!Input1, 2),")+y"
 endif
 endmacro
 
@@ -1182,7 +1183,7 @@ macro Op152()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	ADC $",hex(!Input1, 2),", #$",hex(!Input2, 2)
+	print "	ADC.b $",hex(!Input1, 2),", #$",hex(!Input2, 2)
 endif
 endmacro
 
@@ -1195,14 +1196,14 @@ endmacro
 macro Op154()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SUBW YA, $",hex(!Input1, 2)
+	print "	SUBW.b YA, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op155()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	DEC $",hex(!Input1, 2),"+x"
+	print "	DEC.b $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
@@ -1245,7 +1246,7 @@ endmacro
 macro Op162()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET5 $",hex(!Input1, 2)
+	print "	SET5.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1254,21 +1255,21 @@ macro Op163()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS5 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS5.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op164()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SBC A, $",hex(!Input1, 2)
+	print "	SBC.b A, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op165()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	SBC A, $",hex(!Input1, 4)
+	print "	SBC.w A, $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1281,14 +1282,14 @@ endmacro
 macro Op167()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SBC A, ($",hex(!Input1, 2),"+x)"
+	print "	SBC.b A, ($",hex(!Input1, 2),"+x)"
 endif
 endmacro
 
 macro Op168()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SBC A, #$",hex(!Input1, 2)
+	print "	SBC.b A, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1296,36 +1297,36 @@ macro Op169()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SBC $",hex(!Input1, 2),", $",hex(!Input2, 2)
+	print "	SBC.b $",hex(!Input1, 2),", $",hex(!Input2, 2)
 endif
 endmacro
 
 macro Op170()
-	%readword()
+	%readword(Input1)
 	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	MOV",hex(!TEMP2, 1)," C, $",hex(!Input1, 4)
+	print "	MOV",hex(!TEMP2, 1),".w C, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op171()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	INC $",hex(!Input1, 2)
+	print "	INC.b $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op172()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	INC $",hex(!Input1, 4)
+	print "	INC.w $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op173()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP Y, #$",hex(!Input1, 2)
+	print "	CMP.b Y, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1345,7 +1346,7 @@ macro Op176()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BCS CODE_",hex(!Input1, 4)
+	print "	BCS.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1358,7 +1359,7 @@ endmacro
 macro Op178()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR5 $",hex(!Input1, 2)
+	print "	CLR5.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1367,35 +1368,35 @@ macro Op179()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC5 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC5.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op180()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SBC A, $",hex(!Input1, 2),"+x"
+	print "	SBC.b A, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
 macro Op181()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	SBC A, $",hex(!Input1, 4),"+x"
+	print "	SBC.w A, $",hex(!Input1, 4),"+x"
 endif
 endmacro
 
 macro Op182()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	SBC A, $",hex(!Input1, 4),"+y"
+	print "	SBC.w A, $",hex(!Input1, 4),"+y"
 endif
 endmacro
 
 macro Op183()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SBC A, ($",hex(!Input1, 2),")+y"
+	print "	SBC.b A, ($",hex(!Input1, 2),")+y"
 endif
 endmacro
 
@@ -1403,7 +1404,7 @@ macro Op184()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SBC $",hex(!Input1, 2),", #$",hex(!Input2, 2)
+	print "	SBC.b $",hex(!Input1, 2),", #$",hex(!Input2, 2)
 endif
 endmacro
 
@@ -1416,14 +1417,14 @@ endmacro
 macro Op186()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOVW YA, $",hex(!Input1, 2)
+	print "	MOVW.b YA, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op187()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	INC $",hex(!Input1, 2),"+x"
+	print "	INC.b $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
@@ -1466,7 +1467,7 @@ endmacro
 macro Op194()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET6 $",hex(!Input1, 2)
+	print "	SET6.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1475,21 +1476,21 @@ macro Op195()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS6 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS6.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op196()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),", A"
+	print "	MOV.b $",hex(!Input1, 2),", A"
 endif
 endmacro
 
 macro Op197()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 4),", A"
+	print "	MOV.w $",hex(!Input1, 4),", A"
 endif
 endmacro
 
@@ -1502,50 +1503,50 @@ endmacro
 macro Op199()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV ($",hex(!Input1, 2),"+x), A"
+	print "	MOV.b ($",hex(!Input1, 2),"+x), A"
 endif
 endmacro
 
 macro Op200()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CMP X, #$",hex(!Input1, 2)
+	print "	CMP.b X, #$",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op201()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 4),", X"
+	print "	MOV.w $",hex(!Input1, 4),", X"
 endif
 endmacro
 
 macro Op202()
-	%readword()
+	%readword(Input1)
 	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	MOV",hex(!TEMP2, 1)," $",hex(!Input1, 4),", C"
+	print "	MOV",hex(!TEMP2, 1),".w $",hex(!Input1, 4),", C"
 endif
 endmacro
 
 macro Op203()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),", Y"
+	print "	MOV.b $",hex(!Input1, 2),", Y"
 endif
 endmacro
 
 macro Op204()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 4),", Y"
+	print "	MOV.w $",hex(!Input1, 4),", Y"
 endif
 endmacro
 
 macro Op205()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV X, #$",hex(!Input1, 2)
+	print "	MOV.b X, #$",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1565,7 +1566,7 @@ macro Op208()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BNE CODE_",hex(!Input1, 4)
+	print "	BNE.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1578,7 +1579,7 @@ endmacro
 macro Op210()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR6 $",hex(!Input1, 2)
+	print "	CLR6.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1587,63 +1588,63 @@ macro Op211()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC6 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC6.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op212()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),"+x, A"
+	print "	MOV.b $",hex(!Input1, 2),"+x, A"
 endif
 endmacro
 
 macro Op213()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 4),"+x, A"
+	print "	MOV.w $",hex(!Input1, 4),"+x, A"
 endif
 endmacro
 
 macro Op214()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 4),"+y, A"
+	print "	MOV.w $",hex(!Input1, 4),"+y, A"
 endif
 endmacro
 
 macro Op215()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV ($",hex(!Input1, 2),")+y, A"
+	print "	MOV.b ($",hex(!Input1, 2),")+y, A"
 endif
 endmacro
 
 macro Op216()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),", X"
+	print "	MOV.b $",hex(!Input1, 2),", X"
 endif
 endmacro
 
 macro Op217()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),"+y, X"
+	print "	MOV.b $",hex(!Input1, 2),"+y, X"
 endif
 endmacro
 
 macro Op218()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOVW $",hex(!Input1, 2),", YA"
+	print "	MOVW.b $",hex(!Input1, 2),", YA"
 endif
 endmacro
 
 macro Op219()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),"+x, Y"
+	print "	MOV.b $",hex(!Input1, 2),"+x, Y"
 endif
 endmacro
 
@@ -1664,13 +1665,13 @@ macro Op222()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	CBNE $",hex(!Input2, 2),"+x, CODE_",hex(!Input1, 4)
+	print "	CBNE.b $",hex(!Input2, 2),"+x, CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op223()
 if !Pass == 1
-	print "	DAA"
+	print "	DAA A"
 endif
 endmacro
 
@@ -1689,7 +1690,7 @@ endmacro
 macro Op226()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	SET7 $",hex(!Input1, 2)
+	print "	SET7.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1698,21 +1699,21 @@ macro Op227()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBS7 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBS7.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op228()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV A, $",hex(!Input1, 2)
+	print "	MOV.b A, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op229()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV A, $",hex(!Input1, 4)
+	print "	MOV.w A, $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1725,43 +1726,43 @@ endmacro
 macro Op231()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV A, ($",hex(!Input1, 2),"+x)"
+	print "	MOV.b A, ($",hex(!Input1, 2),"+x)"
 endif
 endmacro
 
 macro Op232()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV A, #$",hex(!Input1, 2)
+	print "	MOV.b A, #$",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op233()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV X, $",hex(!Input1, 4)
+	print "	MOV.w X, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op234()
-	%readword()
+	%readword(Input1)
 	%AdjustMemBitOpcodeOutput()
 if !Pass == 1
-	print "	NOT",hex(!TEMP2, 1)," C, $",hex(!Input1, 4)
+	print "	NOT",hex(!TEMP2, 1),".w C, $",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op235()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV Y, $",hex(!Input1, 2)
+	print "	MOV.b Y, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op236()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV Y, $",hex(!Input1, 4)
+	print "	MOV.w Y, $",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1788,7 +1789,7 @@ macro Op240()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BEQ CODE_",hex(!Input1, 4)
+	print "	BEQ.b CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1801,7 +1802,7 @@ endmacro
 macro Op242()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	CLR7 $",hex(!Input1, 2)
+	print "	CLR7.b $",hex(!Input1, 2)
 endif
 endmacro
 
@@ -1810,49 +1811,49 @@ macro Op243()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	BBC7 $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
+	print "	BBC7.b $",hex(!Input2, 2),", CODE_",hex(!Input1, 4)
 endif
 endmacro
 
 macro Op244()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV A, $",hex(!Input1, 2),"+x"
+	print "	MOV.b A, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
 macro Op245()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV A, $",hex(!Input1, 4),"+x"
+	print "	MOV.w A, $",hex(!Input1, 4),"+x"
 endif
 endmacro
 
 macro Op246()
-	%readword()
+	%readword(Input1)
 if !Pass == 1
-	print "	MOV A, $",hex(!Input1, 4),"+y"
+	print "	MOV.w A, $",hex(!Input1, 4),"+y"
 endif
 endmacro
 
 macro Op247()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV A, ($",hex(!Input1, 2),")+y"
+	print "	MOV.b A, ($",hex(!Input1, 2),")+y"
 endif
 endmacro
 
 macro Op248()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV X, $",hex(!Input1, 2)
+	print "	MOV.b X, $",hex(!Input1, 2)
 endif
 endmacro
 
 macro Op249()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV X, $",hex(!Input1, 2),"+y"
+	print "	MOV.b X, $",hex(!Input1, 2),"+y"
 endif
 endmacro
 
@@ -1860,14 +1861,14 @@ macro Op250()
 	%readbyte(Input2)
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV $",hex(!Input1, 2),", $",hex(!Input2, 2)
+	print "	MOV.b $",hex(!Input1, 2),", $",hex(!Input2, 2)
 endif
 endmacro
 
 macro Op251()
 	%readbyte(Input1)
 if !Pass == 1
-	print "	MOV Y, $",hex(!Input1, 2),"+x"
+	print "	MOV.b Y, $",hex(!Input1, 2),"+x"
 endif
 endmacro
 
@@ -1887,7 +1888,7 @@ macro Op254()
 	%readbyte(Input1)
 	%HandleBranch($80, !ByteCounter)
 if !Pass == 1
-	print "	DBNZ Y, CODE_",hex(!Input1, 4)
+	print "	DBNZ.b Y, CODE_",hex(!Input1, 4)
 endif
 endmacro
 
@@ -1898,6 +1899,7 @@ endif
 	%DefineLabelAfterNoPassOpcode(!CurrentOffset)
 endmacro
 
+%HandleJump(!CurrentOffset)
 org !ROMOffset
 !InLoop = 1
 !BlockSizeWarning = 0
@@ -1963,6 +1965,8 @@ while !Pass < 2
 		!TotalBlockSize #= !TotalBlockSize+!CurrentBlockSize
 	endif
 	!Pass #= !Pass+1
+	!CurrentOffset #= !ROMOffset
+	!LoopCounter #= 0
 endif
 print "%EndSPCUploadAndJumpToEngine($!EngineOffset)"
 

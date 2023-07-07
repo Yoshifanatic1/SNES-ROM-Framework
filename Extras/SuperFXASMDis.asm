@@ -1,11 +1,11 @@
 @asar 1.81
 
 ; Modify these as needed
-sfxrom						; The memory map of the ROM. Seeing as this script is for SuperFX asm, you likely won't need to change it.
+sfxrom								; The memory map of the ROM. Seeing as this script is for SuperFX asm, you likely won't need to change it.
 !ROMOffset = $088000				; The ROM offset to begin disassembly from.
-!Bank = 08					; Affects the bank byte for the label used in IWT R15 instructions.
+!Bank = 08							; Affects the bank byte for the label used in IWT R15 instructions.
 !DoTwoPassesFlag = 1				; If 1, the script will run twice, with the purpose of generating labels that appear before the branch that points to it. Turning this on may slow down disassembly speed, however.
-!MaxBytes = 8192				; The maximum amount of bytes that will be read at a time. Setting this lower/higher will speed up/slow down disassembly.
+!MaxBytes = 32768					; The maximum amount of bytes that will be read at a time. Setting this lower/higher will speed up/slow down disassembly.
 
 ; Don't touch these
 !Input1 = $00
@@ -17,7 +17,7 @@ sfxrom						; The memory map of the ROM. Seeing as this script is for SuperFX as
 !TEMP2 = ""
 !TEMP3 = ""
 !Pass = 0
-!CurrentOffset = 0
+!CurrentOffset #= !ROMOffset
 
 macro GetOpcode()
 	!Input1 #= read1(!ROMOffset+!ByteCounter)
@@ -2110,6 +2110,7 @@ macro Op255()
 	%DefineLabelAfterNoPassOpcode(!CurrentOffset)
 endmacro
 
+%HandleJump(!CurrentOffset)
 org !ROMOffset
 if !DoTwoPassesFlag == 1
 	while !ByteCounter < !MaxBytes
@@ -2121,6 +2122,7 @@ if !DoTwoPassesFlag == 1
 	!ByteCounter #= 0
 endif
 	!Pass = 1
+	!CurrentOffset #= !ROMOffset
 while !ByteCounter < !MaxBytes
 	%PrintLabel(!CurrentOffset)
 	%GetOpcode()

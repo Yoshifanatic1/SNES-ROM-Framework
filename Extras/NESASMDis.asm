@@ -1,11 +1,11 @@
 @asar 1.81
 
 ; Modify these as needed
-lorom						; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
+lorom								; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
 !ROMOffset = $008000				; The ROM offset to begin disassembly from.
-!Bank = 00					; Affects the bank byte for the label used in JSR/JMP instructions.
+!Bank = 00							; Affects the bank byte for the label used in JSR/JMP instructions.
 !DoTwoPassesFlag = 1				; If 1, the script will run twice, with the purpose of generating labels that appear before the branch that points to it. Turning this on may slow down disassembly speed, however.
-!MaxBytes = 16384				; The maximum amount of bytes that will be read at a time. Setting this lower/higher will speed up/slow down disassembly.
+!MaxBytes = 32768					; The maximum amount of bytes that will be read at a time. Setting this lower/higher will speed up/slow down disassembly.
 
 ; Don't touch these
 !Input1 = $00
