@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 if !Define_Global_CustomChip&$7F == !Chip_SuperFX1
 !ChipName = "SuperFX"
 else

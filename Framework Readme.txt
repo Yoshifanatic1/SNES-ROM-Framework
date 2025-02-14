@@ -13,6 +13,7 @@ Table of Contents (use ctrl+F)
 - Supported ROMs
 - Custom ROM Versions
 - Standalone SMAS+W ROM Hacks
+- Routine Macro System
 - MSU-1 Support
 - Save File Generation
 - Chip Firmware
@@ -24,6 +25,8 @@ Table of Contents (use ctrl+F)
 - Future Improvements
 - FAQ
 - Credits
+
+
 
 ===Basic Usage===
 To assemble a ROM:
@@ -41,6 +44,8 @@ Notes:
 - Asar is a cross platform program, but some of the components are Windows only. You'll have to write your own script that replaces the Assemble_X.bat files if you use a different operating system.
 - The asset extraction is necessary so it'll be safer to distribute these disassemblies by not including the copyrighted assets. I shouldn't have to do this for 25+ year old games, but greedy corporations like Disney are the ones who decided that their copyright monopoly needed to last for an utterly obscene number of years.
 - If you have a headered ROM, you can remove the header by using a hex editor to delete the first 512 (decimal)/200 (hexadecimal) bytes. Headered ROMs typically have a .smc extension, while headerless ROMs have .sfc, although this isn't always the case.
+
+
 
 ===Global Defines And Files===
 The settings in X_GlobalAssemblySettings() in the ROM Map files
@@ -179,7 +184,6 @@ Notes:
 
 
 
-
 ===Global Macros===
 These are one of the core components of the disassembly. Without them, this disassembly would not work at all. Here is what each one does:
 
@@ -252,6 +256,8 @@ Macros that differ depending on whether SNES, SPC700, or SuperFX assembly is occ
 - InsertMacroAtXPosition()		- This is called inside every routine macro to insert it at the address specified inside the routine macro call. If the address is set to "NULLROM" or if !Define_Global_IgnoreCodeAlignments is enabled, the routine macro will be inserted at the earliest available byte inside the bank it's in. Note that it changes the base address if used during SPC700 or SuperFX assembly.
 - SetDuplicateOrNullPointer()		- This is used if you want a label to point somewhere invalid or into another routine without needing to mess with the label structure of said routine. Note that this must be called after a "namespace off" if inside a routine macro.
 
+
+
 ===ROM Version Differences===
 This framework has a built in method for handling multiple versions of the same game without needing to make a separate disassembly for each one. !Define_Global_ROMToAssemble is a global define that can be checked for to determine what ROM was chosen to assemble. As an example:
 
@@ -262,7 +268,7 @@ else
 	STZ.b $00
 endif
 
-This checks if the SMW ROM assembled is the japanese version, and if it is, it assembles the LDA.b #$00 : STA.b $00. Otherwise, it assembles the STZ.b $00.
+This checks if the SMW ROM assembled is the Japanese version, and if it is, it assembles the LDA.b #$00 : STA.b $00. Otherwise, it assembles the STZ.b $00.
 
 Notes:
 - It's possible to check for multiple versions with the same check, either with elseif checks if multiple versions do different things in one spot or by placing multiple !ROM defines inside the parenthesis, using a "|" between defines, if multiple ROMs do the same change.
@@ -273,12 +279,15 @@ Notes:
 - For external files that are different between versions, it's expected that you append the GameID and version ID to the file, at least if you want to make use of the InsertVersionExclusiveFile() global macro. In some cases, it might be appropriate to append a different identifyer (ex. SMAS/SMASW for a file that's different between regular SMAS and SMAS+W)
 
 
+
 ===Supported ROMs===
 This disassembly framework supports 60+ different ROMs across 30+ games. Visit my GitHub repositories page to see what games are supported: https://github.com/Yoshifanatic1?tab=repositories
 
 Notes:
 - The SMW/SMAS/SMAS+W disassembly supports the most ROMs, as it supports 5 SMW ROMs, 4 SMAS ROMs, 2 SMAS+W ROMs, and 12 custom standalone ROMs for the individual games in SMAS.
 - In theory, 90% of all official SNES games could be made to work within this framework. The main exceptions being games that require features asar currently doesn't support or games that use hardware that's either poorly documented or not supported well enough by this framework.
+
+
 
 ===Custom ROM Versions===
 So, you want to make a ROM hack using the disassembly, but you want more control over it than what the custom folder offers. Well, the framework supports making your own custom ROM versions. To do this:
@@ -295,7 +304,6 @@ Note:
 
 
 
-
 ===Standalone SMAS+W ROM Hacks===
 Thanks to my efforts with the SMAS/SMAS+W disassembly, I made it possible to not only assemble SMAS/SMAS+W with the different games completely removed, but also to assemble the individual games as standalone ROMs that work outside of SMAS. Think of it like if Nintendo released these games individually on the SNES rather than as part of a compilation.
 The main purpose of this is to allow people to make ROM hacks of these games without the rest of SMAS and the other games hogging up a significant chunk of the ROM. They're also good for casual play, as it's slightly quicker to load up each game rather than go through SMAS's menu/title screen.
@@ -308,6 +316,71 @@ Anyway, here are some notes about these ROMs:
 - All these ROMs are 512 KB, except SMB3 which is 1 MB.
 - Aside from what was needed to get the games working and make the game feel authentic, no other changes were made.
 - They may occasionally be updated to fix bugs/oversights with their implementation. Only the latest version of the ROMs will be possible to assemble, because the SMAS/SMAS+W disassembly is complicated enough as is. It doesn't need to support a million different revisions for what are essentially ROM hacks.
+
+
+
+===Routine Macro System===
+One of the unique aspects of disassemblies made with this framework in mind is the routine macro system. Most disassemblies of SNES games individualize the banks, but the RM system individualizes each routine (though this system can still do it the traditional way).
+
+The benefits of this system include:
+
+- Individual routines that are split between multiple banks or routines that are very similar can be visually grouped together for easier editing.
+
+- Routines can be hardcoded to insert at a specific address (based on the current ROM layout) to help maintain the overall structure of the ROM even when adding/removing code/data. This is useful if you want the output ROM to maintain compatibility with existing resources/tools for that game.
+
+- It's easier to move around and remove individual routines since you only need to mess with the RM call instead of the whole routine.
+
+- It encourages a few good programming habits, like keeping your code organized, using namespaces, etc.
+
+- It's easier to support multiple ROMs in cases where routines were moved to completely different locations between versions.
+
+- It's easier to keep track of custom routines for a ROM Hack if you given them a different GameID than the original game's GameID.
+
+To make use of it for your game or ROM hack, you'll need to do the following:
+1). Copy/paste the below blank routine macro:
+
+- For regular RMs, copy/paste this:
+macro RMTYPE_GameID_ExampleRoutineMacro(Address)
+namespace GameID_ExampleRoutineMacro
+%InsertMacroAtXPosition(<Address>)
+
+; Insert your stuff here
+
+namespace off
+endmacro
+
+- For inline RMs, copy/paste this instead:
+
+macro RMTYPE_GameID_ExampleRoutineMacro()
+
+; Insert your stuff here
+
+endmacro
+
+2). Change "GameID" to whatever your project's !GameID is.
+3). Change "ExampleRoutineMacro" to reflect the function of this RM.
+4). Change "RMTYPE" to one of the following:
+	- "ROUTINE" if this RM is for a code routine
+	- "DATATABLE" if this RM is going to exclusively contain data tables or files.
+	- "INLINEROUTINE" if the RM is going to be code that is nested into another RM. Ie. Shared code snippits or near identical routines that are within multiple RMs.
+	- "INLINEDATATABLE" if the RM is going to be data that is nested into another RM.
+5). Insert a call to the RM somewhere in one of the following locations:
+	- If the disassembly fully uses the RM system, put the reference in the appropriate ROM Map file within one of the bank definitions.
+	- If the disassembly insteads uses full bank RMs or you're inserting an inline RM, put the reference in between the existing code where you want the RM to be inserted.
+
+6). For non-inline RMs, set the insert address in the RM call (NOT the definition you copy/pasted). If you don't want to set an address, put "NULLROM" (without the quotes) as the address.
+7). Write the code/data you want to put into the RM between the "%InsertMacroAtXPosition(<Address>)" and "namespace off". For inline RMs, it's within the macro definition instead.
+
+
+Notes:
+- It's HIGHLY recommended that if you assign an address to your RMs, that you order them by insert address. Because it will get confusing very quickly if you don't.
+- Setting !Define_Global_IgnoreCodeAlignments to !TRUE will effectively make every RM act like their address is set to "NULLROM".
+- Due to how much time and effort it takes to individually identify every routine, only a few disassemblies may use this system in full.
+- While you can move routines around freely with this system, take care not to accidentally move JSR routines outside the bank they're referenced in. Because the JSRs/RTSs aren't going to auto adjust.
+- %SetDuplicateOrNullPointer() must be placed between the namespace off command and the endmacro command within a routine macro, if you're making use of this global macro.
+- The "namespace nested" asar command is set to off by default in the framework.
+- By default, all the routine macros for a given CPU architecture will be in one file. You're not strictly limited to this, as you could make smaller RM files containing related routines for better organization, if desired.
+
 
 
 ===MSU-1 Support===
@@ -364,7 +437,6 @@ For convienience, the framework provides a folder for this firmware. Placing the
 
 
 
-
 ===Pre-compiled File Link Protocal===
 Due to the nature of the SuperFX chip, the SPC700, and the fact that asar doesn't allow referencing labels across different architectures, I've created a system that allows you to be able to assemble that code while being able to link to it within the main assembly.
 In additon, perhaps you may be using a custom build of asar or other tool that doesn't work directly with the disassembly. With this, you can compile the code/data while being able to link it to the main assembly.
@@ -394,7 +466,6 @@ Notes:
 
 
 
-
 ===RDC File Format===
 Some games may store data for certain things in a way that would be highly cumbersome to edit manually. To make things easier, I've created a custom file format I call "ROM Data Collection", which groups together blocks of related data into 1 file for easier editing via external tools, sharing, and simple convienience. If you've ever used Lunar Magic when editing SMW, RDC files are much like LM's .mwl files, except more generic and more flexible.
 
@@ -414,7 +485,6 @@ After the description is the pointer table pointed at with the pointer stored at
 - The size of the data block.
 
 After this pointer table should be the data for the individual blocks contained within the RDC file.
-
 
 
 
@@ -520,6 +590,8 @@ PAL_Layer3_IntroCutscene_SmallSuperstarLetter_Ptrs:
 
 This will create a .tpl file where each palette that's part of the file is given its own row.
 
+
+
 ===Using the GAMEX Base ROM===
 Unlike most of the ROMs supported by this disassembly, this is not an actual game disassembly. This is a base ROM made by me that is intended for homebrew game development and as a base for new disassemblies. At the bare minimum needed to make use of it, here is what you need to do:
 1. Copy the GAMEX folder to make a copy of it.
@@ -552,9 +624,9 @@ Some notes about the ROM:
 So, you want to create your own SNES game disassembly using this framework? To do this, you'll need:
 - A SNES code compiler (This framework comes with Asar by default)
 - A SNES emulator with debugging capabilities. (ex. BSNES Plus)
-- An emulator/tool that can disassemble/display SNES ASM code
-- A hex editor
-- A text editor that works with .txt files
+- An emulator/tool that can disassemble/display SNES ASM code (the GAMEX disassembly contains scripts that can output this code)
+- A hex editor (ex. HxD or SHex)
+- A text editor that works with .txt files (ex. Notepad)
 - A good understanding of SNES coding (65C816 ASM knowledge is mandatory, SPC700/SuperFX ASM knowledge is optional but useful).
 - A lot of time and patience
 - The GAMEX disassembly to use as a base.
@@ -572,6 +644,7 @@ The difficulty of disassembling a game will depend on a lot of different factors
 - Games that heavily modify the DBR require more code examination, since it makes it harder to tell what the absolute address referenced are pointing to.
 - HiROM games that place code in the lower half of its banks are harder to disassemble than LoROM games, since it's harder to tell what is a ROM address and what is a RAM/register address. With LoROM games, assuming the DBR is pointing to ROM, any absolute address in the $8000-$FFFF ranger is automatically a ROM address.
 - Games that put ROM pointers in constants are harder to get the disassembly into an edit friendly state.
+- Certain game genres result in more complicated games. RPGs are generally the most complex games to disassemble, due to their heavy usage of scripting.
 
 Notes:
 - Start by looking at the ROM header at $00FFC0. That will tell you all the information that you need in order to fill out all the ROM_Map defines. You'll have to do some external research to fill in any that can't be determined by the header.
@@ -663,19 +736,19 @@ $XXXXXX should be a multiple of $010000, based on how many banks the file spans 
 	- Long strings of STOP opcodes or STOPs that are not followed by a NOP.
 	- Long strings of IWT R15, #$FFFF
 	- Long strings of the same branch instruction.
+- If you want to practice making a disassembly before commiting to a more complex game disassembly, try disassembling the SNES ports of Ms. Pac-Man or Frogger.
+
 
 
 ===Future Improvements===
 Here are a list of ideas for possible improvements to this ROM framework. Note that backwards compatibility is not my concern, as there is a good chance something may need to be heavily re-written as more games get disassembled.
 
 - Replacing the .bat files with a makefile or similar type of file. This would allow these disassemblies to be usable on non-Windows OSes. I've attempted to use makefiles before, but I couldn't find any documentation for features I need.
-- Rewrite the SPC700 handling to be similar to the SuperFX handling. Mainly for consistency.
 - Make the GAMEX ROM work with the SA-1/SuperFX if the user sets the chip to one of those.
 - Add full support for the more obscure chips/peripherals/memory maps. Their files lack defines or are untested.
 - Add a 12 MB ROM size option. I need a proper implementation of the ExLoROM/ExHiROM memory maps before this can be done.
 - Potentially modify the bank system so that switching the memory map will auto-adjust the ROM data/SRAM to match the new memory map. Currently, switching from HiROM to LoROM causes issues.
 - Add a custom memory map feature that specifies the exact memory map for a game, meant for any games that doesn't fit the mold defined by any normal memory map.
-- Improve the code disassembly scripts to add new features. One idea being to generate labels in between code rather than only after a terminating or always branching opcode.
 
 Here is a list of ideas for the main component, asar.
 - Vastly increasing the amount of freespace areas that can be assigned with the freespace/freecode/freedata command. The current limit is problematic if one wants to make use of the patching feature.
@@ -734,11 +807,13 @@ Notice that it doesn't say anything specifically about making money, but rather 
 
 Now considering that copyright is about promoting progress rather than making money, why does copyright last for 100+ years on average (Currently, it lasts until death of the author plus 70-120 years depending on certain factors)? That doesn't promote progress. That promotes laziness and stagnation. Case in point, look at all the unoriginal sequels and remakes coming out of Hollywood these days. With copyright the way it is, what incentive is there to be creative if you can milk a single work for longer than anyone has ever lived? Plus, authors don't create new works when they're dead.
 There is also the fact that many authors give away their rights to their works to big publishers. Publishers that usually exploit said authors by taking most of the profits made off said works. Unless a work was independently published, you're not actually supporting the authors/devs/composer/etc. of a work by buying it, you're supporting the publisher. Doubly so if said author/dev/composer/etc. specifically works for said publisher, as they get paid by the publisher when creating a work, not when you buy copies of the work or anything attached to it. If you actually want to support these authors/devs/composers/etc., you need to do so in a way that doesn't directly benefit the publisher (ex. Giving them money on a site like Patreon).
-And isn't it funny that it's the corporations/publishers, not the authors themselves, that are the ones lobbying to make the copyright law (and related laws, like the DMCA) more draconian to benefit themselves at the expense of the public's rights? Heck, if the Disney Corporation (aka. A company who benefited from the public domain to create some of their most beloved works) didn't screw with this laws to keep their ~100 year old mascots from being elevated to the public domain (and nobody else got a similar idea), a lot of these SNES games I disassembled would likely already be public domain works (Copyright originally lasted 14 years, with a one time optional 14 year extention).
+And isn't it funny that it's the corporations/publishers, not the authors themselves, that are the ones lobbying to make the copyright law (and related laws, like the DMCA) more draconian to benefit themselves at the expense of the public's rights? Heck, if the Disney Corporation (aka. A company who benefited from the public domain to create some of their most beloved works) didn't screw with these laws to keep their ~100 year old mascots from being elevated to the public domain (and nobody else got a similar idea), a lot of these SNES games I disassembled would likely already be public domain works (Copyright originally lasted 14 years, with a one time optional 14 year extention).
 There is also the "lost sale" argument that the corporations love to use. They like to claim they lose millions/billions whenever people copy/stream their copyrighted works. However, that's not how it works. Once initially created, digital files can be copied infinitely at 0 cost. Meaning, if you copy a digital work, the copyright holder doesn't lose anything since nothing is lost on their end. Also, technically speaking, every time you buy the same/similar item from a competitor, it could be seen as a "lost sale" to whoever you didn't buy said item from. Does the Pepsi company consider it a "lost sale" if you buy a Coke instead of a Pepsi? Or what if you buy a used copy of a game. Does the copyright holder consider that a "lost sale"? If not, then why is file sharing any different in this regard?
 If copyright lasted for, say, 5-10 years, it's not like these corporations will die off. If they want to keep making money off the same work, they'll have to put in the effort to incentivize people to buy the new, copyrighted edition of a work rather than get the public domain version for free. Doesn't that sound like it would lead to better products overall? As for the independent authors/devs/composers/etc. that want to make money off their work after it's elevated to public domain, they could do it through other means, like release a new and improved edition they can copyright, crowdfunding a new work, commisions, concerts, or merchandising so it's not like they wouldn't have options if they couldn't sell copies of their works (ie. They'd adapt their business to the changing market, like any normal business does).
 
 Oh, and also, the corporations don't need to C&D my disassemblies or else they lose the copyright status of these games. That only applies to trademarks under trademark law, which my disassemblies have nothing to do with. Don't let confusing, overgeneralizing terms like "IP" confuse you into thinking these wildly different laws function identically to one another.
+
+
 
 ===Credits===
 - yoshifanatic (Maker of this framework and various disassemblies)

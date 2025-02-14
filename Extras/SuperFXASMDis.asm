@@ -1,4 +1,4 @@
-@asar 1.81
+asar 1.91
 
 ; Modify these as needed
 sfxrom								; The memory map of the ROM. Seeing as this script is for SuperFX asm, you likely won't need to change it.
@@ -2117,7 +2117,7 @@ if !DoTwoPassesFlag == 1
 		%GetOpcode()
 		%Op!Input1()
 		!LoopCounter #= !LoopCounter+1
-	endif
+	endwhile
 	!LoopCounter #= 0
 	!ByteCounter #= 0
 endif
@@ -2128,6 +2128,6 @@ while !ByteCounter < !MaxBytes
 	%GetOpcode()
 	%Op!Input1()
 	!LoopCounter #= !LoopCounter+1
-endif
+endwhile
 
 print "Disassembly has ended at $",hex(!ROMOffset+!ByteCounter, 6)

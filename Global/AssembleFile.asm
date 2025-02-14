@@ -1,4 +1,4 @@
-@asar 1.81
+asar 1.91
 incsrc "../Global/Global_Definitions.asm"
 incsrc "../Global/Global_Macros.asm"
 
@@ -27,5 +27,5 @@ elseif !FileType == !FileType_MSU1DataFile
 elseif !FileType == !FileType_SaveFile
 	%GenerateSaveFile(!GameID, !GameID, !ROMID, !MainFolder)
 else
-	error "Invalid \!FileType parameter"
+	error "Invalid \!FileType parameter: !FileType"
 endif

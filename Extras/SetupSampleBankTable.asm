@@ -1,4 +1,4 @@
-@asar 1.81
+asar 1.91
 ; This will set up the sample pointer table and data when applied to the ROM. Just set the beginning and end offset of the pointer table.
 
 lorom
@@ -12,6 +12,7 @@ lorom
 !StartOfSampleData = $849910
 !EndOfSampleData = $84E80B
 !BaseAddressOfSampleData = $50E6
+!InitialSampleID = 0
 
 while !LoopCounter < !EndOffset-!Offset
 	!Input1 = read2(!Offset+!LoopCounter)
@@ -25,7 +26,7 @@ while !LoopCounter < !EndOffset-!Offset
 	endif
 	!LoopCounter #= !LoopCounter+4
 	!SamplePtrCount #= !SamplePtrCount+$01
-endif
+endwhile
 
 if !SamplePtrCount != 0
 	!SamplePtrCount #= !SamplePtrCount-$01
@@ -36,7 +37,7 @@ endif
 print ""
 !Input1 = $FFFF
 !LoopCounter #= 0
-!SampleID #= 0
+!SampleID #= !InitialSampleID
 while !LoopCounter < !EndOffset-!Offset
 	!PreviousInput #= !Input1
 	!Input1 #= read2(!Offset+!LoopCounter)
@@ -53,11 +54,11 @@ while !LoopCounter < !EndOffset-!Offset
 		!SampleID #= !SampleID+$01
 	endif
 	!LoopCounter #= !LoopCounter+4
-endif
+endwhile
 
 print ""
 !LoopCounter #= 0
-!SampleID #= 0
+!SampleID #= !InitialSampleID
 while !LoopCounter < !EndOffset-!Offset
 	if !LoopCounter/$04 == !SamplePtrCount
 		!Input1 #= read2(!Offset+!LoopCounter)
@@ -87,15 +88,15 @@ while !LoopCounter < !EndOffset-!Offset
 		!SampleID #= !SampleID+$01
 	endif
 	!LoopCounter #= !LoopCounter+4
-endif
+endwhile
 
 print ""
 !LoopCounter #= 0
-!SampleID #= 0
+!SampleID #= !InitialSampleID
 while !LoopCounter <= !SampleCount
 	print "BRRFile",hex(!SampleID, 2),":"
-	print "	db '",hex(!SampleID, 2),".bin'"
+	print "	db '",hex(!SampleID, 2),".brr'"
 	print "BRRFile",hex(!SampleID, 2),"End:"
 	!SampleID #= !SampleID+1
 	!LoopCounter #= !LoopCounter+1
-endif
+endwhile

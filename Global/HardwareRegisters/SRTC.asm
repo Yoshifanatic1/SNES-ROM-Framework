@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 !ChipName = "S-RTC"
 !Firmware = "NULL"
 

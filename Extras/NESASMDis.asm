@@ -1,4 +1,4 @@
-@asar 1.81
+asar 1.91
 
 ; Modify these as needed
 lorom								; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
@@ -1838,7 +1838,7 @@ if !DoTwoPassesFlag == 1
 		%GetOpcode()
 		%Op!Input1()
 		!LoopCounter #= !LoopCounter+1
-	endif
+	endwhile
 	!LoopCounter #= 0
 	!ByteCounter #= 0
 endif
@@ -1848,7 +1848,7 @@ while !ByteCounter < !MaxBytes
 	%GetOpcode()
 	%Op!Input1()
 	!LoopCounter #= !LoopCounter+1
-endif
+endwhile
 
 !Input1 #= !ROMOffset+!ByteCounter
 print "Disassembly has ended at $",hex(!ROMOffset+!ByteCounter, 6)

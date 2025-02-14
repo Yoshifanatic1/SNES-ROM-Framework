@@ -17,7 +17,7 @@ while !PtrStartOffset+!LoopCounter1 < !PtrEndOffset
 	print "print '	dl $',hex(!Input1+$04),',$',hex(!Input2),',BRRFile',hex(!LoopCounter2, 2),',BRRFile',hex(!LoopCounter2, 2),'End'"
 	!LoopCounter1 #= !LoopCounter1+3
 	!LoopCounter2 #= !LoopCounter2+1
-endif
+endwhile
 
 !LoopCounter1 = 0
 !LoopCounter2 = 0
@@ -28,4 +28,4 @@ while !PtrStartOffset+!LoopCounter1 < !PtrEndOffset
 	print "print 'BRRFile',hex(!LoopCounter2, 2),'End:'"
 	!LoopCounter1 #= !LoopCounter1+3
 	!LoopCounter2 #= !LoopCounter2+1
-endif
+endwhile

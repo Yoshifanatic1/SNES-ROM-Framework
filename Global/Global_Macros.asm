@@ -1,12 +1,12 @@
-@includeonce
+includeonce
 
 ;---------------------------------------------------------------------------
 
 macro StartOfROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1029				; Note: Disable warning about mapper switching
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wmapper_already_set
 incsrc "../Global/HardwareRegisters/SNES.asm"
 ;namespace nested on
 
@@ -37,9 +37,9 @@ endif
 
 SNES_Header_!NumOfInsertedSNESHeader:
 if !ROMBankSplitFlag == !TRUE
-	warnpc ((!SNESHeaderLoc+!TEMP)|!FastROMAddressOffset)^!HiROMAddressOffset
+	assert pc() <= ((!SNESHeaderLoc+!TEMP)|!FastROMAddressOffset)^!HiROMAddressOffset
 else
-	warnpc (!SNESHeaderLoc+!TEMP)|!FastROMAddressOffset|!HiROMAddressOffset
+	assert pc() <= (!SNESHeaderLoc+!TEMP)|!FastROMAddressOffset|!HiROMAddressOffset
 endif
 
 if !Define_Global_CartridgeHeaderVersion == $02
@@ -81,7 +81,7 @@ endif
 while !TEMP != 0
 	!TEMP #= !TEMP>>1
 	!ROMSize #= !ROMSize+1
-endif
+endwhile
 .ProgramSize:		db !ROMSize
 .ProgramMemorySize:	db !Define_Global_SRAMSize
 .ProgramRegion:		db !Define_Global_Region
@@ -119,9 +119,9 @@ endmacro
 
 macro InitializeROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1029				; Note: Disable warning about mapper switching
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wmapper_already_set
 ;namespace nested on
 
 print "Yoshifanatic's SNES ROM Framework, Version !FrameworkVer.!FrameworkSubVer.!FrameworkSubSubVer"
@@ -145,11 +145,11 @@ endmacro
 
 macro InitializeSPCROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1006				; Note: Disable warning about non-existent opcodes with 16-bit parameters.
-warnings disable W1029				; Note: Disable warning about mapper switching
-arch spc700-raw
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wspc700_assuming_8_bit
+warnings disable Wmapper_already_set
+arch spc700
 incsrc "../Global/HardwareRegisters/SPC700.asm"
 ;namespace nested on
 
@@ -159,6 +159,7 @@ incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
 %<GameID>_LoadGameSpecificMainSPC700Files()
 
+norom
 org $000000
 reset bytes
 check bankcross off
@@ -169,9 +170,9 @@ endmacro
 
 macro InitializeSuperFXROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $008000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1029				; Note: Disable warning about mapper switching
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wmapper_already_set
 arch superfx
 ;namespace nested on
 
@@ -194,7 +195,7 @@ endmacro
 
 macro FinalizeROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
-warnings disable W1019				; Note: Disable warning about db "STAR"
+warnings disable Wxkas_patch
 ;namespace nested on
 
 incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
@@ -219,9 +220,9 @@ endmacro
 
 macro DisplayFinalChecksum(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1029				; Note: Disable warning about mapper switching
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wmapper_already_set
 ;namespace nested on
 
 incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
@@ -254,9 +255,9 @@ endmacro
 
 macro GetFirmwareFile(CurrentGameID, GameID, ROMID, MainFolder)
 org $008000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1029				; Note: Disable warning about mapper switching
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wmapper_already_set
 ;namespace nested on
 
 incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
@@ -270,9 +271,9 @@ endmacro
 
 macro InitializeMSU1ROM(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1029				; Note: Disable warning about mapper switching
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wmapper_already_set
 incsrc "../Global/HardwareRegisters/SNES.asm"
 incsrc "../Global/HardwareRegisters/MSU1.asm"
 ;namespace nested on
@@ -294,9 +295,9 @@ endmacro
 
 macro GenerateSaveFile(CurrentGameID, GameID, ROMID, MainFolder)
 org $000000
-warnings disable W1011				; Note: Disable freespace leak warning.
-warnings disable W1019				; Note: Disable warning about db "STAR"
-warnings disable W1029				; Note: Disable warning about mapper switching
+warnings disable Wfreespace_leaked
+warnings disable Wxkas_patch
+warnings disable Wmapper_already_set
 incsrc "../Global/HardwareRegisters/SNES.asm"
 ;namespace nested on
 
@@ -305,7 +306,7 @@ incsrc "../<MainFolder>/RomMap/ROM_Map_!ROMID.asm"
 !Define_Global_ROMSize = !Define_Global_ROMSize1+!Define_Global_ROMSize2
 %<GameID>_GameSpecificAssemblySettings()
 reset bytes
-if !Define_Global_CartridgeHeaderVersion = $02
+if !Define_Global_CartridgeHeaderVersion == $02
 	if !Define_Global_SRAMSize|!Define_Global_ExpansionRAMSize|!Define_Global_ExpansionFlashSize != !SRAMSize_0KB 
 		incsrc "!PathToFile"
 	else
@@ -560,18 +561,25 @@ print "Compatible Controllers: !TEMP"
 print "ROM Version Number: !Define_Global_VersionNumber"
 
 if !Define_Global_ApplyAsarPatches == !TRUE
-	!TEMP = " Yes"
+	!TEMP = "Yes"
 else
 	!TEMP = "No"
 endif
 print "Apply Custom Asar Patches: !TEMP"
 
 if !Define_Global_ApplyDefaultPatches == !TRUE
-	!TEMP = " Yes"
+	!TEMP = "Yes"
 else
 	!TEMP = "No"
 endif
 print "Apply Default Patches: !TEMP"
+
+if !Define_Global_IgnoreCodeAlignments == !TRUE
+	!TEMP = "Yes"
+else
+	!TEMP = "No"
+endif
+print "Code Alignment Disabled: !TEMP"
 
 print ""
 endmacro
@@ -787,11 +795,11 @@ endif
 if !Define_Global_CustomChip&$7F == !Chip_None
 	!ChipName = "None"
 	!Firmware = "NULL"
-elseif !Define_Global_CustomChip&$7F = !Chip_DSP1
+elseif !Define_Global_CustomChip&$7F == !Chip_DSP1
 	incsrc "../Global/HardwareRegisters/DSP1.asm"
-elseif !Define_Global_CustomChip&$7F = !Chip_DSP1A
+elseif !Define_Global_CustomChip&$7F == !Chip_DSP1A
 	incsrc "../Global/HardwareRegisters/DSP1.asm"
-elseif !Define_Global_CustomChip&$7F = !Chip_DSP1B
+elseif !Define_Global_CustomChip&$7F == !Chip_DSP1B
 	incsrc "../Global/HardwareRegisters/DSP1.asm"
 elseif !Define_Global_CustomChip&$7F == !Chip_DSP2
 	incsrc "../Global/HardwareRegisters/DSP2.asm"
@@ -932,10 +940,6 @@ if !Define_Global_SRAMSize > !SRAMSize_32KB
 	warn "Some emulators/flash carts have iffy support for SRAM sizes above 32 KB. This SRAM size is not recommended if you want to maximize compatibility."
 endif
 
-if !Define_Global_IgnoreCodeAlignments == !TRUE
-	warn "This ROM may not be compatible with other tools because IgnoreCodeAlignments was set to true."
-endif
-
 if !FastROMAddressOffset&$800000 == $800000
 	if !Define_Global_ROMSize > !ROMSize_4MB
 		warn "The ROM size can't be greater than 4 MB with FastROM addressing!"
@@ -972,12 +976,15 @@ endif
 
 if !FrameworkSubSubVer != !Define_Global_ROMFrameworkSubSubVer
 	!TEMP #= 1
+	print "Fart"
 endif
 if !FrameworkSubVer != !Define_Global_ROMFrameworkSubVer
 	!TEMP #= 2
+	print "Poop"
 endif
 if !FrameworkVer != !Define_Global_ROMFrameworkVer
 	!TEMP #= 3
+	print "Pee"
 endif
 
 if !TEMP == 1
@@ -1037,7 +1044,7 @@ if getfilestatus("<File>") == $00
 		if <DataIndex> < !TEMP2 
 			!TEMP3 #= readfile4("<File>", (!TEMP1+$08)+(<DataIndex>*$10))
 			!TEMP4 #= readfile4("<File>", (!TEMP1+$0C)+(<DataIndex>*$10))
-			incbin "<File>":(!TEMP3)-(!TEMP3+!TEMP4)
+			incbin "<File>":!TEMP3..!TEMP3+!TEMP4
 		else
 			error "RDC file '<File>' doesn't contain <DataIndex> data blocks! Use an index of 0-",dec(!TEMP2-1)," for this file!"	
 		endif
@@ -1064,8 +1071,8 @@ if stringsequal("<CurrentGameID>", "<GameID>")
 		!TEMP1 = !TRUE
 	endif
 
-	if !TEMP1 = !TRUE
-		if !Define_Global_CartridgeHeaderVersion = $02
+	if !TEMP1 == !TRUE
+		if !Define_Global_CartridgeHeaderVersion == $02
 			if !Define_Global_SRAMSize|!Define_Global_ExpansionRAMSize|!Define_Global_ExpansionFlashSize != !SRAMSize_0KB 
 				incsrc "<Path>"
 			endif

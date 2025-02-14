@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 
 ;---------------------------------------------------------------------------
 
@@ -16,7 +16,7 @@ macro InsertMacroAtXPosition(Address)
 if !Define_Global_IgnoreCodeAlignments == !FALSE
 	if stringsequal("<Address>", "NULLROM")
 	else
-		warnpc <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+		assert pc() <= <Address>|!FastROMAddressOffset|!HiROMAddressOffset
 		base <Address>|!FastROMAddressOffset|!HiROMAddressOffset
 	endif
 endif

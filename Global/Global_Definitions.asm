@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 ;Note: Do not modify the defines in this file! All but the framework function defines can be used for custom use.
 
 ; General defines.
@@ -151,8 +151,8 @@
 ; Framework function defines
 ; These are used by the disassembly framework for certain functions. Not meant for custom use.
 !FrameworkVer = 1
-!FrameworkSubVer = 3
-!FrameworkSubSubVer = 1
+!FrameworkSubVer = 4
+!FrameworkSubSubVer = 0
 !RDCFileVer = 1
 !RDCFileSubVer = 0
 !RDCFileSubSubVer = 0

@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 if !Define_Global_CustomChip&$7F == !Chip_DSP1
 	!ChipName = "DSP-1A"
 	!Firmware = "dsp1a.bin"

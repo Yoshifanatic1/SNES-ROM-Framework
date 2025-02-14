@@ -1,13 +1,32 @@
+Note: Changes marked with a * mean something you need to implement in the game specific components of the disassembly, if upgrading a disassembly to a new framework version.
+Changes to the global components can just be handled by downloading the new framework version.
+
+;--------------------------------------------------------------------
+
+(2/13/2025 V1.4.0 release)
+- *Updated the framework to use asar 1.91.
+- *Increased the amount of errors asar will print out from 20 to 200 during main ROM assembly.
+- If an invalid !FileType is given in the assembly script, asar will now display it in the error message.
+- *Changed the naming convention of some defines.
+	+ !Define -> !Const (if the define is acting as a constant)
+- Removed the warning for ignoring code alignment and instead made the setting's state be printed out during assembly.
+- Initialized the memory map of SPC700 code compilation to "norom".
+- Updated the provided Lunar Compress files to version 1.90.
+- Fixed a minor oversight in SetupSampleBankTable.asm, where the asset extraction file names would contain .bin instead of .brr.
+- Made it so you can easily set the initial sample ID in SetupSampleBankTable.asm in cases where you're extracting multiple sample banks from a ROM.
+
+;--------------------------------------------------------------------
+
 (7/7/2023 V1.3.1 release)
 - Added support for the Multiplayer 5 peripheral
-- Made it so that a disassembly will not assemble unless the asset extraction script has been run first.
-- The disassembly folder name is no longer tied to the GameID.
-- Attempting to assemble a valid, but unsupported ROM version now displays a message instead of giving a deluge of error messages.
-- Added a line of dashes in the command window when assembling a ROM or extracting assets to visually separate the input text with the text pertaining to the assembly/extraction itself.
-- During asset extraction, a pointer value of $000001 should now corresponds to a .tpl palette file, $000002-$0000FF correspond to game specific files, and $000100+ corresponds to an RDC file.
-- You can now specify the asar.exe used for asset extraction.
-- Moved "Bank of Defines.txt" and "Half Bank Of Defines.txt" to the Extras folder, since those have nothing to do with the global functionality of the framework.
-- Added opcode length specifiers to opcodes disassembled with SPC700ASMDis.asm.
+- *Made it so that a disassembly will not assemble unless the asset extraction script has been run first.
+- *The disassembly folder name is no longer tied to the GameID.
+- *Attempting to assemble a valid, but unsupported ROM version now displays a message instead of giving a deluge of error messages.
+- *Added a line of dashes in the command window when assembling a ROM or extracting assets to visually separate the input text with the text pertaining to the assembly/extraction itself.
+- During asset extraction, a pointer value of $000001 should now correspond to a .tpl palette file, $000002-$0000FF correspond to game specific files, and $000100+ corresponds to an RDC file.
+- *You can now specify the asar.exe used for asset extraction.
+- *Moved "Bank of Defines.txt" and "Half Bank Of Defines.txt" to the Extras folder, since those have nothing to do with the global functionality of the framework.
+- *Added opcode length specifiers to opcodes disassembled with SPC700ASMDis.asm.
 - Fixed an oversight where SPC700 opcode 0x0A "OR1 C, $0000" in SPC700ASMDis.asm always disassembled with a 1 in the opcode.
 - Fixed an oversight where SPC700 opcode 0xDF "DAA A" in SPC700ASMDis.asm was missing the single A.
 - Added the batch script DisassembleASM.bat to the Extras folder to provide an easier way to use the various disassembly scripts that also outputs the code to a separate file instead of the command line.
@@ -27,12 +46,12 @@
 - SetupSampleBankTable.asm can now handle the last sample pointer and now sets up the file name data for the extraction script.
 - Added a new section to the framework readme on Asset Extraction and the RDC file format.
 - Assembling a ROM now shows whether default patches will be applied or not.
-- Removed the %StripeImageHeader() global macro as that's a remnant of this framework starting as a SMW disassembly and SMW and SMAS are the only games I've looked at that use stripe images.
-- Heavily altered how SPC700 and SuperFX code/data is meant to be handled by the framework. 
-- Removed the %SPCDataBlockStart(), %SPCDataBlockEnd(), %EndSPCUploadAndJumpToEngine() SPC700 specific macro, since not every game handles SPC700 uploads the same. 
-- %SPCDataBlockStart() and %SPCDataBlockEnd now function more like how %SuperFXBankStart() and %SuperFXBankEnd() function. They've also been renamed to %SPC700DataBlockStart() and %SPC700DataBlockEnd()
-- %SetNextPreCompiledCodePointer() now require specifying an index for what part of a pre-compiled file to reference.
-- %InsertNextPreCompiledCodeBlock() has been replaced with %ReadPreCompiledFilePointers()
+- *Removed the %StripeImageHeader() global macro as that's a remnant of this framework starting as a SMW disassembly and SMW and SMAS are the only games I've looked at that use stripe images.
+- *Heavily altered how SPC700 and SuperFX code/data is meant to be handled by the framework. 
+- *Removed the %SPCDataBlockStart(), %SPCDataBlockEnd(), %EndSPCUploadAndJumpToEngine() SPC700 specific macro, since not every game handles SPC700 uploads the same. 
+- *%SPCDataBlockStart() and %SPCDataBlockEnd now function more like how %SuperFXBankStart() and %SuperFXBankEnd() function. They've also been renamed to %SPC700DataBlockStart() and %SPC700DataBlockEnd()
+- *%SetNextPreCompiledCodePointer() now require specifying an index for what part of a pre-compiled file to reference.
+- *%InsertNextPreCompiledCodeBlock() has been replaced with %ReadPreCompiledFilePointers()
 - Added %MSU1RoutinePointer(), which is the pointer generation macro for MSU-1 files.
 - Added a disassembly script for NES games to the Extras folder.
 - Added new defines for SPC700 related registers.
@@ -47,8 +66,8 @@
 ;--------------------------------------------------------------------
 
 (9/20/2021 V1.1.3 release)
-- Added a new feature for applying default patches after main assembly. This is specifically for stuff like calculating checksums of copy detection routines that can't be done during main assembly.
-- Added a define that enables whether default patches are applied.
+- *Added a new feature for applying default patches after main assembly. This is specifically for stuff like calculating checksums of copy detection routines that can't be done during main assembly.
+- *Added a define that enables whether default patches are applied.
 - Added the unused DMA registers to the DMA struct.
 
 ;--------------------------------------------------------------------
@@ -68,20 +87,20 @@
 - Fixed !SA1_BWRAMWriteProtection_Disable being the wrong value.
 - Changed the SRAM Bank for the SuperFX memory map to $700000
 - Made the code that prints the checksum handle leading zeros using asar 1.80's improved hex() command function.
-- Can now specify two ROM sizes in order to be able to handle ROM sizes that aren't powers of 2, but rather the sum of 2 powers of 2 (ex. 1.5 MB).
+- *Can now specify two ROM sizes in order to be able to handle ROM sizes that aren't powers of 2, but rather the sum of 2 powers of 2 (ex. 1.5 MB).
 - If the ROM size is set to be greater than 4 MB, the framework will auto set the ROM layout to ExLoROM, ExHiROM, or SA-1 LoROM based on the memory layout.
-- Removed the ExLoROM and ExHiROM defines, as those memory maps are now automatically assigned.
-- SRAM/BWRAM/ExRAM/IRAM Map files are now loaded in LoadGameSpecificMainSNESFiles() rather than GlobalAssemblySettings() in order to fix a bug with !SRAMBankBaseAddress not being initialized.
-- The LoadExtraRAMFile() macro now uses the !GameID as parameters, in order to determine whether a SRAM/BWRAM/ExRAM/IRAM Map file should be loaded.
+- *Removed the ExLoROM and ExHiROM defines, as those memory maps are now automatically assigned.
+- *SRAM/BWRAM/ExRAM/IRAM Map files are now loaded in LoadGameSpecificMainSNESFiles() rather than GlobalAssemblySettings() in order to fix a bug with !SRAMBankBaseAddress not being initialized.
+- *The LoadExtraRAMFile() macro now uses the !GameID as parameters, in order to determine whether a SRAM/BWRAM/ExRAM/IRAM Map file should be loaded.
 - Tweaked the SuperFX, ExLoROM, and ExHIROM memory maps to better reflect the layout of those ROM maps.
 - Memory map related data is now read during SuperFX code assembly.
 - Added two new global macros InsertNextPreCompiledCodeBlock() and SetNextPreCompiledCodePointer(). These allow you to insert data that was compiled with a different tool besides asar. They function similarly to the SuperFX code macros.
-- Removed the SuperFX version of the above two macros.
+- *Removed the SuperFX version of the above two macros.
 - Added a new define !SRAMBankMirror/!EXRAMBankMirror/!BWRAMBankMirror that is intended to be ORed onto mirrored BW-RAM or SuperFX Expansion RAM. Which one to use depends on the current memory map.
-- The asset extraction scripts now expect different ROM versions to be named differently.
+- *The asset extraction scripts now expect different ROM versions to be named differently.
 - Asar 1.81 is now the minimum asar version needed by the framework.
 - The code disassembly scripts can now generate labels in the middle of code rather than only after opcodes that the CPU can't go past.
-- The %InsertVersionExclusiveFile() now uses an address parameter.
+- *The %InsertVersionExclusiveFile() now uses an address parameter.
 - %InsertMacroAtXPosition() now works during SPC700 or SuperFX code assembly. By extention, this also affects all global macros that accept an address parameter.
 - %SetDuplicateOrNullPointer() now works during SPC700 or SuperFX code assembly.
 

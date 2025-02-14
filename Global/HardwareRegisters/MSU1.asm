@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 
 ;MSU-1 read registers
 !REGISTER_MSU1_Read_StatusPort = $2000

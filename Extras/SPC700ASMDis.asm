@@ -1,4 +1,4 @@
-@asar 1.81
+asar 1.91
 
 ; Modify these as needed
 lorom								; The memory map of the ROM. Change this if the ROM uses a different memory map, or else the output may be wrong.
@@ -1961,13 +1961,13 @@ while !Pass < 2
 					print ""
 				endif
 			endif
-		endif
+		endwhile
 		!TotalBlockSize #= !TotalBlockSize+!CurrentBlockSize
-	endif
+	endwhile
 	!Pass #= !Pass+1
 	!CurrentOffset #= !ROMOffset
 	!LoopCounter #= 0
-endif
+endwhile
 print "%EndSPCUploadAndJumpToEngine($!EngineOffset)"
 
 !Input1 #= !ROMOffset+!BaseOffsetOffset+!TotalBlockSize

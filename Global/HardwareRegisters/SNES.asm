@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 
 !REGISTER_ScreenDisplayRegister = $002100
 	!ScreenDisplayRegister_MinBrightness00 = $00			;\ Screen brightness
@@ -579,13 +579,13 @@ else
 endif
 if !CurrentBank != $FF
 	if !InSuperFXHiROMMirror == !TRUE
-		warnpc ((($<Bank>/$02)<<16)|$400000)+$10000
+		assert pc() <= ((($<Bank>/$02)<<16)|$400000)+$10000
 		!InSuperFXHiROMMirror = !FALSE
 	else
 		if !ROMBankSplitFlag == !TRUE
-			warnpc ((($<Bank><<16)+$10000)|!FastROMAddressOffset)^!HiROMAddressOffset
+			assert pc() <= ((($<Bank><<16)+$10000)|!FastROMAddressOffset)^!HiROMAddressOffset
 		else
-			warnpc (($<Bank><<16)+$10000)|!FastROMAddressOffset|!HiROMAddressOffset
+			assert pc() <= (($<Bank><<16)+$10000)|!FastROMAddressOffset|!HiROMAddressOffset
 		endif
 	endif
 endif
@@ -603,11 +603,11 @@ if !InLoROMBank == !FALSE
 	if !Define_Global_CustomChip&$7F == !Chip_SA1
 		if !Define_Global_ROMSize > !ROMSize_4MB
 		else
-			warnpc ((!CurrentBank<<16)+$8000)|!FastROMAddressOffset|!HiROMAddressOffset
+			assert pc() <= ((!CurrentBank<<16)+$8000)|!FastROMAddressOffset|!HiROMAddressOffset
 			org (((!CurrentBank<<16)+$8000)|!FastROMAddressOffset)^!HiROMAddressOffset
 		endif
 	else
-		warnpc ((!CurrentBank<<16)+$8000)|!FastROMAddressOffset|!HiROMAddressOffset
+		assert pc() <= ((!CurrentBank<<16)+$8000)|!FastROMAddressOffset|!HiROMAddressOffset
 		org (((!CurrentBank<<16)+$8000)|!FastROMAddressOffset)^!HiROMAddressOffset
 	endif
 	!ROMBankSplitFlag = !TRUE
@@ -628,7 +628,7 @@ if !Define_Global_IgnoreCodeAlignments|!Define_Global_DisableROMMirroring == !FA
 		if (!TEMP>>16)&$FE == $7E
 			error "This HandleROMMirroring() macro call points to a RAM bank!"
 		else
-			warnpc <Address>
+			assert pc() <= <Address>
 			!InROMMirror = !TRUE
 			base !TEMP
 		endif
@@ -646,18 +646,18 @@ if !Define_Global_IgnoreCodeAlignments == !FALSE
 	else
 		if !InROMMirror == !FALSE
 			if !ROMBankSplitFlag == !TRUE
-				warnpc (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
+				assert pc() <= (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
 				org (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
 			else
-				warnpc <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+				assert pc() <= <Address>|!FastROMAddressOffset|!HiROMAddressOffset
 				org <Address>|!FastROMAddressOffset|!HiROMAddressOffset
 			endif
 		else
 			if !ROMBankSplitFlag == !TRUE
-				warnpc (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
+				assert pc() <= (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
 				base (<Address>|!FastROMAddressOffset)^!HiROMAddressOffset
 			else
-				warnpc <Address>|!FastROMAddressOffset|!HiROMAddressOffset
+				assert pc() <= <Address>|!FastROMAddressOffset|!HiROMAddressOffset
 				base <Address>|!FastROMAddressOffset|!HiROMAddressOffset
 			endif
 		endif

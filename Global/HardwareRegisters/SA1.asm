@@ -1,4 +1,4 @@
-@includeonce
+includeonce
 !ChipName = "SA-1"
 !SRAMType = "SRAM"
 !Firmware = "NULL"
