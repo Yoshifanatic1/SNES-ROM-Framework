@@ -34,7 +34,7 @@ endif
 	PHK
 	PLB
 	SEP.b #$10
-	LDA.w #(!REGISTER_ReadOrWriteToWRAMPort&$0000FF<<8)+$08
+	LDA.w #((!REGISTER_ReadOrWriteToWRAMPort&$0000FF)<<8)+$08
 	STA.w DMA[$00].Parameters
 	LDX.b #$01
 RAMClearLoop:
@@ -426,7 +426,7 @@ Main:
 	LDA.b #!ScreenDisplayRegister_SetForceBlank|!ScreenDisplayRegister_MinBrightness00
 	STA.w !REGISTER_ScreenDisplayRegister
 	STA.w !RAM_GAMEX_Global_ScreenDisplayRegister
-	LDY.w #(!REGISTER_ReadOrWriteToWRAMPort&$0000FF<<8)+$08
+	LDY.w #((!REGISTER_ReadOrWriteToWRAMPort&$0000FF)<<8)+$08
 	STY.w DMA[$00].Parameters
 	LDA.b #!RAM_GAMEX_Global_GenericDataBuffer>>16
 	STA.w !REGISTER_WRAMAddressBank
@@ -475,7 +475,7 @@ Main:
 	LDA.b #$80
 	STA.w GAMEX_Global_DMAUpdateTable[$00].ExtraParam
 	STA.w GAMEX_Global_DMAUpdateTable[$00].ExtraParam
-	LDY.w #(!REGISTER_WriteToVRAMPortLo&$0000FF<<8)+$01
+	LDY.w #((!REGISTER_WriteToVRAMPortLo&$0000FF)<<8)+$01
 	STY.w GAMEX_Global_DMAUpdateTable[$00].Parameters
 	STY.w GAMEX_Global_DMAUpdateTable[$01].Parameters
 	LDA.b #$08
@@ -513,7 +513,7 @@ BlankTileData:
 SplashScreenTextPalette:
 	dw $7FFF
 
-table "Tables/Fonts/Basic.txt"
+%GAMEX_BasicFont()
 
 TextData:
 .Line1:	db " THIS IS YOSHIFANATIC'S GAMEX "

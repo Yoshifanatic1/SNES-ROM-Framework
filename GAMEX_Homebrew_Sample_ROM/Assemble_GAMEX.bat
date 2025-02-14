@@ -83,10 +83,10 @@ echo.
 %asarVer% --fix-checksum=on --define MainFolder="%FolderName%" --define GameID="%GAMDID%" --define ROMID="%Input1%" --define FileType=0 ..\Global\AssembleFile.asm %output%
 
 echo Assembling %ROMNAME% SPC700 Blocks...
-%asarVer% --no-title-check --define MainFolder="%FolderName%" --define GameID="%GAMDID%" --define ROMID="%Input1%" --define FileType=4 ..\Global\AssembleFile.asm SPC700\SPC700DataBlocks_%GAMDID%.bin
+%asarVer%  --error-limit=200 --no-title-check --define MainFolder="%FolderName%" --define GameID="%GAMDID%" --define ROMID="%Input1%" --define FileType=4 ..\Global\AssembleFile.asm SPC700\SPC700DataBlocks_%GAMDID%.bin
 
 echo Assembling ROM...
-%asarVer% --define MainFolder="%FolderName%" --define GameID="%GAMDID%" --define ROMID="%Input1%" --define FileType=1 ..\Global\AssembleFile.asm %output%
+%asarVer%  --error-limit=200 --define MainFolder="%FolderName%" --define GameID="%GAMDID%" --define ROMID="%Input1%" --define FileType=1 ..\Global\AssembleFile.asm %output%
 
 if exist ..\%FolderName%\Temp.txt del ..\%FolderName%\Temp.txt
 %asarVer% --define MainFolder="%FolderName%" --define GameID="%GAMDID%" --define ROMID="%Input1%" --define FileType=6 ..\Global\AssembleFile.asm Temp.txt

@@ -68,7 +68,7 @@ GFX_ExampleCompressedGraphicsFileEnd:
 ;--------------------------------------------------------------------
 
 PAL_ExamplePaletteFile:
-	db "PAL_ExamplePaletteFile.tpl
+	db "PAL_ExamplePaletteFile.tpl"
 PAL_ExamplePaletteFileEnd:
 
 ;--------------------------------------------------------------------

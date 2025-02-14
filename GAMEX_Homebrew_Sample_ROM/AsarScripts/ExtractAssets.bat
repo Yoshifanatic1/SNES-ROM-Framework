@@ -146,12 +146,12 @@ EXIT /B %ERRORLEVEL%
 
 :ExtractFile
 echo:%MemMap% >> TEMP1.asm
-echo:org $008000 >> TEMP1.asm
+echo:org $C00000 >> TEMP1.asm
 echo:Main: >> TEMP1.asm
 echo:check bankcross off >> TEMP1.asm
-echo:^^!ExtractionType #= readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($008000+%PointerSet%))+$00+(%i%*$0C))) >> TEMP1.asm
+echo:^^!ExtractionType #= readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$00+(%i%*$0C))) >> TEMP1.asm
 echo:if ^^!ExtractionType == $000000 >> TEMP1.asm
-echo:^^!ExtractionDataPointer #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($008000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
+echo:^^!ExtractionDataPointer #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
 echo:^^!FilesToCombine #= readfile1("TEMP.sfc", ^^!ExtractionDataPointer) >> TEMP1.asm
 echo:^^!LoopCounter #= 0 >> TEMP1.asm
 echo:while ^^!LoopCounter ^^!= ^^!FilesToCombine >> TEMP1.asm
@@ -162,7 +162,7 @@ echo:^^!LoopCounter #= ^^!LoopCounter+$01 >> TEMP1.asm
 echo:endif >> TEMP1.asm
 
 echo:elseif ^^!ExtractionType == $000001 >> TEMP1.asm
-echo:^^!ExtractionDataPointer #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($008000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
+echo:^^!ExtractionDataPointer #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
 echo:^^!EndPaddingBytes #= readfile2("TEMP.sfc", ^^!ExtractionDataPointer+$01) >> TEMP1.asm
 echo:^^!FilesToCombine #= readfile1("TEMP.sfc", ^^!ExtractionDataPointer) >> TEMP1.asm
 echo:^^!LoopCounter #= 0 >> TEMP1.asm
@@ -181,7 +181,7 @@ echo:elseif ^^!ExtractionType ^<= $0000FF >> TEMP1.asm
 echo:print "Game specific asset setting $",hex(^^!ExtractionType, 2)," is undefined." >> TEMP1.asm
 
 echo:elseif ^^!ExtractionType ^<= $007FFF >> TEMP1.asm
-echo:^^!ExtractionDataPointer #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($008000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
+echo:^^!ExtractionDataPointer #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
 echo:^^!FilesToCombine #= readfile1("TEMP.sfc", ^^!ExtractionDataPointer) >> TEMP1.asm
 echo:^^!FileType #= readfile2("TEMP.sfc", ^^!ExtractionDataPointer+$01) >> TEMP1.asm
 echo:^^!LoopCounter #= 0 >> TEMP1.asm
@@ -207,8 +207,8 @@ echo:^^!LoopCounter #= ^^!LoopCounter+$01 >> TEMP1.asm
 echo:endif >> TEMP1.asm
 
 echo:else >> TEMP1.asm
-echo:^^!OffsetStart #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($008000+%PointerSet%))+$00+(%i%*$0C)))) >> TEMP1.asm
-echo:^^!OffsetEnd #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($008000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
+echo:^^!OffsetStart #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$00+(%i%*$0C)))) >> TEMP1.asm
+echo:^^!OffsetEnd #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$03+(%i%*$0C)))) >> TEMP1.asm
 echo:incbin %ROMName%:(^^!OffsetStart)-(^^!OffsetEnd) >> TEMP1.asm
 echo:endif >> TEMP1.asm
 
@@ -218,7 +218,7 @@ EXIT /B 0
 
 :GetGFXFileName
 echo:%MemMap% >> TEMP2.asm
-echo:org $008000 >> TEMP2.asm
+echo:org $C00000 >> TEMP2.asm
 echo:^^!FileNameStart #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$06+(%i%*$0C)))) >> TEMP2.asm
 echo:^^!FileNameEnd #= snestopc(readfile3("TEMP.sfc", snestopc(readfile3("TEMP.sfc", snestopc($C00000+%PointerSet%))+$09+(%i%*$0C)))) >> TEMP2.asm
 echo:incbin TEMP.sfc:(^^!FileNameStart)-(^^!FileNameEnd) >> TEMP2.asm
@@ -230,7 +230,7 @@ EXIT /B 0
 
 :GetLoopIndex
 echo:%MemMap% >> TEMP4.asm
-echo:org $008000 >> TEMP4.asm
+echo:org $C00000 >> TEMP4.asm
 echo:^^!OnesDigit = 0 >> TEMP4.asm
 echo:^^!TensDigit = 0 >> TEMP4.asm
 echo:^^!HundredsDigit = 0 >> TEMP4.asm
